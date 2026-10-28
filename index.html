@@ -129,6 +129,38 @@ nav button{flex:1;background:none;border:none;color:var(--sub);font-size:10.5px;
 nav button .ic{font-size:19px;line-height:1}
 nav button.on{color:var(--accent)}
 section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14px}
+
+/* 板子详情弹层 */
+.bchip{display:inline-block;background:var(--accent);color:#fff;font-size:12px;padding:2px 10px;border-radius:20px;margin:3px 5px 3px 0;cursor:pointer}
+.bchip:active{transform:scale(.95)}
+.btxt{display:inline-block;font-size:13px;color:var(--sub);margin:3px 4px 3px 0}
+.bmask{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;padding:0}
+.bmask.hidden{display:none}
+.bmodal{background:var(--bg);width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;border-radius:18px 18px 0 0;overflow:hidden;border:1px solid var(--line);border-bottom:none;animation:slideup .25s ease}
+@keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@media(min-width:680px){.bmask{align-items:center;padding:20px}.bmodal{border-radius:18px;border-bottom:1px solid var(--line)}}
+.bhead{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.bhead .bt{font-size:19px;font-weight:700}
+.bhead .bm{font-size:12px;color:var(--accent);margin-top:4px}
+.bx{background:none;border:none;color:var(--sub);font-size:22px;line-height:1;padding:0 2px;cursor:pointer}
+.bbody{overflow-y:auto;padding:14px 18px 24px;-webkit-overflow-scrolling:touch}
+.bsec{margin-bottom:18px}
+.bti{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:9px}
+.bx2{font-size:14px;line-height:1.7}
+.bcomp{margin-top:8px}
+.bcomp-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.blab{font-size:11px;padding:2px 9px;border-radius:6px;color:#0b0d12;font-weight:700}
+.blab.b-神职{background:var(--good)} .blab.b-平民{background:var(--civ)} .blab.b-狼人{background:var(--wolf)} .blab.b-第三方{background:var(--third)}
+.brole{font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.bsigns{display:flex;flex-direction:column;gap:8px}
+.bsign{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.65}
+.bsign b{color:var(--text)}
+.bnotes{display:flex;flex-direction:column;gap:7px}
+.bnote{font-size:13px;line-height:1.65;background:var(--bg2);border-left:3px solid var(--gold);border-radius:6px;padding:9px 11px}
+.bnote b{color:var(--gold)}
+.order{display:flex;flex-wrap:wrap;gap:6px}
+.step{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin:3px 4px 3px 0;font-size:13px}
+.bdetail .order{display:flex;flex-wrap:wrap;gap:6px}
 </style>
 </head>
 <body>
@@ -271,6 +303,27 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
     <button id="prevStep">‹ 上一步</button>
     <button id="exitStep">退出</button>
     <button id="nextStep">下一步 ›</button>
+  </div>
+</div>
+
+<!-- 板子详情弹层 -->
+<div class="bmask hidden" id="boardModal">
+  <div class="bmodal">
+    <div class="bhead">
+      <div>
+        <div class="bt" id="bmName"></div>
+        <div class="bm" id="bmMeta"></div>
+      </div>
+      <button class="bx" id="bmClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="bbody">
+      <div class="bsec"><div class="bti">📋 具体配置</div><div class="bx2" id="bmCfg"></div><div class="bcomp" id="bmComp"></div></div>
+      <div class="bsec"><div class="bti">🌙 夜间唤醒顺序（第1夜）</div><div class="order" id="bmOrder"></div></div>
+      <div class="bsec"><div class="bti">✋ 相关手语（角色专属）</div><div class="bsigns" id="bmSign"></div></div>
+      <div class="bsec"><div class="bti">🤙 通用手势暗语</div><div class="bsigns" id="bmGesture"></div></div>
+      <div class="bsec"><div class="bti">⚠️ 相关注意事项</div><div class="bnotes" id="bmNotes"></div></div>
+      <button class="btn" id="bmJudge" style="width:100%;margin:4px 0 2px">⚖️ 用法官助手 →</button>
+    </div>
   </div>
 </div>
 
@@ -532,7 +585,8 @@ const TERMS=[
    {t:"猎人 / 狼王手语｜指人开枪",d:"被动夜间无手势；出局发动时手指向＝开枪带走谁（白狼王自爆、狼王被刀 / 被投也能开枪；被毒杀不能发动）。"},
    {t:"骑士手语（白天）｜指人决斗",d:"白天发言阶段翻牌并指向一名玩家＝决斗谁；对方是狼则狼出局，对方是好人则骑士自己出局（整局一次）。"},
    {t:"数字手语（通用）｜几指＝几号",d:"比出几根手指＝几号座位玩家，用于指认不准时辅助定位（尤其狼刀、毒指目标）。"},
-   {t:"左右手区分（通用）",d:"部分俱乐部约定：左手＝解药 / 守护类（保人），右手＝毒药 / 攻击类（杀人），便于法官一眼区分女巫两瓶药与攻防动作。"}
+   {t:"左右手区分（通用）",d:"部分俱乐部约定：左手＝解药 / 守护类（保人），右手＝毒药 / 攻击类（杀人），便于法官一眼区分女巫两瓶药与攻防动作。"},
+   {t:"黑蝙蝠手语｜指人庇护",d:"指向一名玩家＝庇护谁（指自己＝庇护自己）；整局同一名玩家只能庇护一次。手势本身无反弹标记，反弹仅在『首个对其释放非狼刀技能者』触发时由法官提示其出局。"}
  ]}
 ];
 
@@ -575,6 +629,19 @@ renderTermChips();renderTerms();
 const roleList=document.getElementById('roleList');
 let curCat='all',curQ='';
 function badgeClass(cat){return cat==='神职'?'b-good':cat==='平民'?'b-civ':cat==='狼人'?'b-wolf':'b-third';}
+function boardsOf(str){
+  const parts=String(str).split(/[、,，]/).map(s=>s.trim()).filter(Boolean);
+  return parts.map(p=>{
+    if(BOARDS.some(b=>b.n===p)) return `<span class="bchip" data-b="${p}">${p}</span>`;
+    const found=BOARDS.find(b=>b.n.includes(p)||p.includes(b.n));
+    if(found) return `<span class="bchip" data-b="${found.n}">${p}</span>`;
+    return `<span class="btxt">${p}</span>`;
+  }).join(' ');
+}
+roleList.addEventListener('click',e=>{
+  const c=e.target.closest('.bchip');if(!c)return;
+  openBoardModal(c.dataset.b);
+});
 function renderRoles(){
   const q=curQ.trim().toLowerCase();
   const arr=ROLES.filter(r=>{
@@ -588,7 +655,7 @@ function renderRoles(){
      <h3>${r.n}<span class="badge ${badgeClass(r.cat)}">${r.cat}</span><span class="diff">${r.d||''}</span></h3>
      <div class="skill"><b>技能：</b>${r.skill}</div>
      <div class="play"><b>玩法：</b>${r.play}</div>
-     <div class="boards">适配板子：${r.b}</div>
+     <div class="boards">适配板子：${boardsOf(r.b)}</div>
    </div>`).join('');
 }
 document.getElementById('roleSearch').addEventListener('input',e=>{curQ=e.target.value;renderRoles();});
@@ -616,24 +683,17 @@ function renderBoards(){
    <div class="bcard">
      <h4>${b.n} <span style="color:var(--gold);font-size:12px">${b.d}</span></h4>
      <div class="cfg">${b.cfg}<br><span style="color:var(--accent)">${b.feat}</span></div>
-     <span class="go" data-i="${i}" data-act="toggle">展开详情 ›</span>
-     <div class="bdetail" id="bd-${i}">
-       <div class="order-title">本板夜间唤醒顺序（第1夜）</div>
-       <div class="order">${nightOrderFor(b,1).map(o=>`<span class="step">${o.n}${o.fn?' ·首夜':''}</span>`).join('')}</div>
-       <div class="order-title" style="margin-top:8px">角色构成</div>
-       <div class="order">${b.roles.map(r=>`<span class="step">${r}</span>`).join('')}</div>
-       <span class="go" data-i="${i}" data-act="judge" style="margin-top:10px;display:inline-block">⚖️ 用法官助手 →</span>
+     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+       <span class="go" data-i="${i}" data-act="modal">📋 板子详情</span>
+       <span class="go" data-i="${i}" data-act="judge">⚖️ 用法官助手 →</span>
      </div>
    </div>`).join('');
 }
 boardGrid.addEventListener('click',e=>{
   const go=e.target.closest('.go');if(!go)return;
   const i=+go.dataset.i;
-  if(go.dataset.act==='toggle'){
-    const d=document.getElementById('bd-'+i);
-    d.classList.toggle('show');
-    go.textContent=d.classList.contains('show')?'收起详情 ›':'展开详情 ›';
-  }else if(go.dataset.act==='judge'){
+  if(go.dataset.act==='modal'){ openBoardModal(BOARDS[i].n); }
+  else if(go.dataset.act==='judge'){
     switchSec('judge');
     document.getElementById('judgeBoard').value=i;
     document.getElementById('nightNum').textContent='1';
@@ -641,6 +701,67 @@ boardGrid.addEventListener('click',e=>{
   }
 });
 renderBoards();
+
+/* ============ 板子详情弹层 ============ */
+function signForRole(r){
+  const cat=TERMS.find(g=>g.cat==='角色手语');if(!cat)return null;
+  if(r==='普通狼人') return cat.items.find(it=>it.t.startsWith('狼人手语'))||null;
+  if(r==='白狼王') return null;
+  return cat.items.find(it=>it.t.includes(r)&&it.t.includes('手语'))||null;
+}
+function boardNotes(b){
+  const has=n=>b.roles.includes(n);
+  const notes=[];
+  if(has('女巫')) notes.push(['女巫用药','一晚一瓶，解药/毒药不可同用；首夜是否可自救需赛前确认（本板默认多数可自救）。']);
+  if(has('守卫')&&has('女巫')) notes.push(['同守同救','守卫守护 + 女巫解药给同一人 → 目标直接死亡，务必错开。']);
+  else if(has('守卫')) notes.push(['守卫规则','不能连续两晚守护同一人。']);
+  if(has('黑蝙蝠')) notes.push(['黑蝙蝠反弹','庇护整局每名玩家仅一次；被庇护者免疫夜间技能，首个对其放非狼刀技能者被反弹出局（仅一次），狼刀通常不触发反弹。']);
+  if(has('狼美人')) notes.push(['狼美人带人','仅白天被放逐才带走魅惑者，夜里死亡不带人；不能连续魅惑同一人。']);
+  if(has('石像鬼')) notes.push(['石像鬼刀人','不与其他狼见面，普狼全灭后方可刀人，不可自爆。']);
+  if(has('机械狼')) notes.push(['机械狼','普狼存活期间不能刀人；学狼后普狼全灭解锁双刀。']);
+  if(has('恶灵骑士')) notes.push(['恶灵骑士','夜间免疫刀毒；验/毒触发一次反伤后失效，仅白天抗推出局，不能自爆自刀。']);
+  if(has('摄梦人')) notes.push(['摄梦人','连摄同一人两晚直接死；摄梦人死则当夜被摄梦者同出。']);
+  if(has('猎魔人')) notes.push(['猎魔人','猎到好人则自己死，禁止盲猎。']);
+  if(has('纯白之女')) notes.push(['纯白之女','第二晚起验狼直接处决。']);
+  if(has('丘比特')) notes.push(['丘比特链','首夜连情侣；人狼情侣组成第三方，进入三方混战，屠边规则不适用。']);
+  if(has('炸弹人')) notes.push(['炸弹人','仅白天被放逐引爆，所有投票者同出。']);
+  if(has('奇迹商人')) notes.push(['奇迹商人','给到狼人当夜死亡，首夜高风险博弈。']);
+  if(has('赤月使徒')) notes.push(['赤月使徒','首次被抗推不死且封印，场上神职或平民≤2解封补刀。']);
+  if(has('蚀时狼妃')) notes.push(['蚀时狼妃','当夜对被锁定者的第一次技能全部无效；不能连续锁定同一人。']);
+  if(has('猎人')||has('狼王')||has('白狼王')) notes.push(['开枪规则','猎人/狼王等被刀·被投可开枪，被毒杀不能开枪。']);
+  notes.push(['屠边胜负','好人杀光所有狼人胜；狼人杀光神职或平民胜。']);
+  return notes;
+}
+function openBoardModal(name){
+  const b=BOARDS.find(x=>x.n===name);if(!b)return;
+  const order=nightOrderFor(b,1);
+  const campMap={'神职':[],'平民':[],'狼人':[],'第三方':[]};
+  b.roles.forEach(r=>{const rc=ROLES.find(x=>x.n===r);if(rc)campMap[rc.cat].push(r);});
+  const campLabels={'神职':'神职','平民':'平民','狼人':'狼人','第三方':'第三方'};
+  let compHtml='';
+  Object.keys(campMap).forEach(c=>{ if(campMap[c].length) compHtml+=`<div class="bcomp-row"><span class="blab b-${c}">${campLabels[c]}</span>${campMap[c].map(r=>`<span class="brole">${r}</span>`).join('')}</div>`; });
+  let signHtml='';
+  b.roles.forEach(r=>{const it=signForRole(r);if(it)signHtml+=`<div class="bsign"><b>${it.t}</b><div>${it.d}</div></div>`;});
+  const gcat=TERMS.find(g=>g.cat==='手势暗语');
+  const gHtml=gcat?gcat.items.map(it=>`<div class="bsign"><b>${it.t}</b><div>${it.d}</div></div>`).join(''):'';
+  const notes=boardNotes(b);
+  const noteHtml=notes.map(n=>`<div class="bnote"><b>· ${n[0]}：</b>${n[1]}</div>`).join('');
+  const idx=BOARDS.indexOf(b);
+  document.getElementById('bmName').textContent=b.n;
+  document.getElementById('bmMeta').textContent=`${b.d}　${b.feat}`;
+  document.getElementById('bmCfg').textContent=b.cfg;
+  document.getElementById('bmComp').innerHTML=compHtml;
+  document.getElementById('bmOrder').innerHTML=`<span class="step">天黑请闭眼</span>`+order.map(o=>`<span class="step">${o.n}${o.fn?' ·首夜':''}</span>`).join('')+`<span class="step">天亮了</span>`;
+  document.getElementById('bmSign').innerHTML=signHtml||'<div class="bsign">本板无角色专属手语。</div>';
+  document.getElementById('bmGesture').innerHTML=gHtml;
+  document.getElementById('bmNotes').innerHTML=noteHtml;
+  document.getElementById('bmJudge').onclick=()=>{ closeBoardModal(); switchSec('judge'); document.getElementById('judgeBoard').value=idx; document.getElementById('nightNum').textContent='1'; refreshJudge(); };
+  document.getElementById('boardModal').classList.remove('hidden');
+}
+function closeBoardModal(){document.getElementById('boardModal').classList.add('hidden');}
+document.getElementById('boardModal').addEventListener('click',e=>{ if(e.target.id==='boardModal') closeBoardModal(); });
+document.getElementById('bmClose').onclick=closeBoardModal;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !document.getElementById('boardModal').classList.contains('hidden')) closeBoardModal(); });
 
 /* ============ 板子配置器：自定义 ============ */
 const customRoles=new Set();
