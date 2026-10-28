@@ -81,6 +81,11 @@ main{padding:14px 12px}
 .cheat .item{background:var(--card);border-left:3px solid var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13.5px}
 .cheat .item b{color:var(--gold)}
 .cheat h2{font-size:15px;margin:14px 0 8px;color:var(--accent)}
+.term-cat{font-size:15px;margin:14px 0 8px;color:var(--accent);font-weight:700}
+.term-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.term-card h3{font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.term-card .df{margin-top:6px;font-size:13.5px;color:var(--sub);line-height:1.75}
+.term-card .df b{color:var(--gold)}
 
 .timer-display{font-size:52px;font-weight:700;text-align:center;letter-spacing:2px;margin:8px 0;font-variant-numeric:tabular-nums}
 .timer-display.ring{color:var(--wolf);animation:flash .5s steps(2) infinite}
@@ -134,15 +139,26 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
 <main>
   <!-- 角色词典 -->
   <section id="sec-dic" class="section active">
-    <input class="search" id="roleSearch" placeholder="🔍 搜角色 / 技能 / 板子，如：机械狼、自爆、通灵">
-    <div class="chips" id="roleChips">
-      <div class="chip on" data-cat="all">全部</div>
-      <div class="chip" data-cat="神职">神职</div>
-      <div class="chip" data-cat="平民">平民</div>
-      <div class="chip" data-cat="狼人">狼人</div>
-      <div class="chip" data-cat="第三方">第三方</div>
+    <div class="seg" id="dicSeg">
+      <button class="on" data-v="role">🎭 角色</button>
+      <button data-v="term">🗣️ 术语黑话</button>
     </div>
-    <div id="roleList"></div>
+    <div id="roleView">
+      <input class="search" id="roleSearch" placeholder="🔍 搜角色 / 技能 / 板子，如：机械狼、自爆、通灵">
+      <div class="chips" id="roleChips">
+        <div class="chip on" data-cat="all">全部</div>
+        <div class="chip" data-cat="神职">神职</div>
+        <div class="chip" data-cat="平民">平民</div>
+        <div class="chip" data-cat="狼人">狼人</div>
+        <div class="chip" data-cat="第三方">第三方</div>
+      </div>
+      <div id="roleList"></div>
+    </div>
+    <div id="termView" style="display:none">
+      <input class="search" id="termSearch" placeholder="🔍 搜术语 / 黑话，如：金水、悍跳、平安夜、警徽流">
+      <div class="chips" id="termChips"></div>
+      <div id="termList"></div>
+    </div>
   </section>
 
   <!-- 板子配置器 -->
@@ -391,6 +407,131 @@ const FAQ=[
  {q:"吹笛者怎么单独获胜？",a:"每晚催眠两名玩家，当『所有存活玩家』都被催眠标记，吹笛者单独获胜。需慢慢叠加标记，隐藏身份避免被优先抗推。"},
  {q:"赤月使徒第一次被抗推为什么没死？",a:"赤月使徒第一次被投票放逐不会死亡，翻牌封印自己；当场上神职≤2 或 平民≤2 时解封回归狼队，获得一次刀人机会。主动吃抗推可保留狼轮次。"}
 ];
+
+/* ============ 数据：术语黑话 ============ */
+const TERMS=[
+ {cat:"核心身份查验（预言家专属）",items:[
+   {t:"金水",d:"预言家查验出的好人玩家。被发金水 = 被预言家认定为好人。注意：若预言家本身是悍跳狼，他发的金水可能是狼队友（做身份、倒钩），金水不一定真好人。"},
+   {t:"查杀",d:"预言家查验出的狼人玩家。被查杀 = 预言家明确报出你是狼，是场上最强狼面信号之一。"},
+   {t:"验人",d:"预言家每晚可查验 1 名玩家身份，仅能得知『好人 / 狼人』，无法区分具体是神牌还是平民。"},
+   {t:"预言家验人规则",d:"仅夜间可验人，每晚限 1 次；只区分好人/狼人，不报具体身份；首夜无强制验人要求。"},
+   {t:"预言家查人应用",d:"首夜优先验熟人/高配玩家，快速锁定好人面；后续优先验焦点位、对跳身份玩家，缩小狼坑；提前规划警徽流，保证出局后传递验人信息。"},
+   {t:"发金水 / 发查杀",d:"预言家在白天报出查验结果，称『给X发金水/发查杀』。真预言家与悍跳狼都会发，需结合警徽流与逻辑判别真伪。"}
+ ]},
+ {cat:"神职规则与玩法",items:[
+   {t:"银水",d:"女巫夜间用解药救下的玩家。银水≠绝对好人，存在狼人自刀骗药可能。"},
+   {t:"铜水",d:"守卫夜间守护成功、未被狼人刀中的玩家（被守护 = 铜水）。"},
+   {t:"毒口",d:"女巫夜间用毒药毒死的目标。"},
+   {t:"女巫自救规则",d:"仅首夜可使用解药自救，后续夜间解药无法对自己使用；全程仅 1 瓶解药、1 瓶毒药，解药毒药不可同一夜使用。"},
+   {t:"女巫毒药应用",d:"优先毒悍跳狼、明狼；避免毒预言家、猎人等神牌；双死时可通过毒口抿身份，关键时刻可毒划水狼锁定胜局。"},
+   {t:"猎人开枪规则",d:"白天被投票放逐、夜间被狼人刀死时，可开枪带走 1 名玩家；被女巫毒死、殉情（狼美人魅惑带走）时无法开枪。"},
+   {t:"猎人开枪应用",d:"被查杀时可跳猎人身份逼退悍跳狼；出局时优先带走明狼、冲票狼，避免带错好人；关键轮次可通过开枪锁定狼坑、正好人视角。"},
+   {t:"同守同救",d:"守卫守护了某玩家，女巫同一晚又对同一个人用解药，目标直接死亡（规则抵消）。是新手最容易翻车的高频结算坑。"}
+ ]},
+ {cat:"警长 & 投票出局",items:[
+   {t:"警徽",d:"第一天竞选警长，拿到警徽的玩家拥有 1.5 票投票权（投票放逐时权重更高）。"},
+   {t:"警徽流",d:"预言家拿到警长后，提前说明后续要查验的玩家名单与警徽移交规则（死后警徽给谁/撕徽），保证信息不中断。"},
+   {t:"上警",d:"第一天参与警长竞选、举手发言的玩家。"},
+   {t:"退水",d:"竞选警长中途放弃竞选，不再争夺警徽（常见于真预言家上警后被悍跳，好人退水让路）。"},
+   {t:"对跳",d:"两名及以上玩家同时跳同一个身份（最常见预言家对跳，真假难辨的核心博弈）。"},
+   {t:"扛推",d:"白天投票把无辜好人投出局，狼人核心目标（把好人扛出去 = 扛推成功）。"},
+   {t:"抗推位",d:"本轮场上嫌疑最大、最容易被投票出局的玩家（狼人想推的人 / 真好人被冤的位置）。"},
+   {t:"出局 / 放逐",d:"白天投票被投出本局游戏，即『放逐出局』。"},
+   {t:"警下",d:"未参与警长竞选的玩家（警上的对立面）。警下玩家负责给上警者投票选警长，也是被归票、被抗推的高危人群。"},
+   {t:"移交警徽 / 撕警徽",d:"警长死亡（出局/被刀）时，可选择把警徽移交给信任的好人，或撕掉警徽（警徽流失效、无 1.5 票）。"},
+   {t:"归票位",d:"最后发言的玩家，负责总结全场、号召所有人统一投票给某一名玩家（即『归票』动作的执行者）。"},
+   {t:"票型",d:"一轮投票的分布形态（集中/分散/冲票），是盘逻辑、找狼的重要依据。"}
+ ]},
+ {cat:"狼人打法派系",items:[
+   {t:"悍跳狼",d:"狼人假装预言家，与真预言家对跳抢警徽，是狼人基础核心玩法。"},
+   {t:"倒钩狼",d:"全程站边真预言家，帮好人盘逻辑、出卖狼队友，潜伏到最后（演得越像好人越危险）。"},
+   {t:"冲锋狼",d:"坚定跟随悍跳狼队友，帮悍跳狼打压真预言家，正面冲锋带队冲票。"},
+   {t:"阴阳倒钩",d:"表面站边真预言家，暗中故意做低真预言家身份、破坏好人阵营（比倒钩更阴）。"},
+   {t:"隐狼",d:"全程低调不站队、不引火上身，不帮队友也不主动踩人，纯隐身苟活。"},
+   {t:"自刀狼",d:"狼人夜晚自刀（狼刀自己），骗女巫解药拿银水，博取好人信任（常见于自刀骗药体系）。"},
+   {t:"深水狼",d:"隐藏极深、发言毫无存在感、绝不引火烧身的狼，比隐狼更难盘，往往活到最后。"}
+ ]},
+ {cat:"玩家发言行为",items:[
+   {t:"表水",d:"被怀疑、被扛推时，梳理自身行为与心路历程，证明自己好人身份的发言。"},
+   {t:"踩 / 打",d:"发言指出某玩家有狼面，怀疑对方是狼人（『踩X』= 我认为X是狼）。"},
+   {t:"保 / 捞",d:"坚定认为某玩家是好人，帮其开脱、站台（『保X』= 我信X是好人）。"},
+   {t:"站边",d:"两名预言家对跳时，选择相信其中一名预言家（站谁那边）。"},
+   {t:"冲票",d:"狼人团队集体投票给一名好人，强行扛推好人出局。"},
+   {t:"分票",d:"狼人故意分散投票，避免己方队友被全票投出（保护队友）。"},
+   {t:"绑票",d:"狼人场上人数多于好人时，抱团投票稳定投走好人（人数压制）。"},
+   {t:"划水",d:"发言简短、无逻辑、不分析局势，含糊混过发言轮次（狼人居多，但划水也可能只是弱好人）。"},
+   {t:"聊爆",d:"发言出现逻辑漏洞、前后矛盾、暴露狼人视角，自身身份聊穿（『聊爆了』= 暴露了）。"},
+   {t:"掰票",d:"原本打算投某人，中途改口劝说大家改投其他人（改变投票走向）。"},
+   {t:"前置位 / 后置位",d:"按发言顺序，先发言的为前置位，后发言的为后置位（后置位信息更多，可针对前面发言盘逻辑）。"},
+   {t:"末置位",d:"全场最后一个发言的位置，信息最全，常由强神/核心玩家承担，负责归票。"},
+   {t:"归票",d:"最后发言的玩家总结全场，号召所有人统一投票给某一名玩家。"},
+   {t:"反水",d:"中途改变立场/站边（如先站真预言家、后跳反支持悍跳狼），反水往往狼面重。"},
+   {t:"好人面 / 狼面",d:"对某玩家『像好人』或『像狼』的整体判断倾向（『X有狼面』= 疑似狼）。"}
+ ]},
+ {cat:"夜间行动 & 基础身份",items:[
+   {t:"刀人",d:"狼人夜晚击杀一名玩家（狼队共同决定）。"},
+   {t:"空刀",d:"狼人夜晚选择不击杀任何人（常用于战术，如自刀骗药后空刀、或保刀控轮次）。"},
+   {t:"双死",d:"同一夜晚有人被狼人刀、有人被女巫毒，天亮两名玩家同时死亡。"},
+   {t:"跳身份",d:"主动报出自己的身份牌（如跳预言家、跳女巫）。"},
+   {t:"穿衣服",d:"狼人假装好人神牌身份，冒充神牌发言（如狼穿女巫衣服）。"},
+   {t:"脱衣服",d:"原本冒充神牌，后续改口承认自己是平民（『脱了』= 我不是神，我是民）。"},
+   {t:"民 / 牌",d:"平民玩家，夜间无任何信息（『闭眼民』）。"},
+   {t:"神牌",d:"神职角色统称（预言家、女巫、猎人、守卫等）。"},
+   {t:"闭眼玩家",d:"平民，夜间无任何信息，仅能靠白天发言盘逻辑。"},
+   {t:"平安夜",d:"天亮后无人死亡的夜晚（狼人空刀、或女巫救活且无人被毒等）。"},
+   {t:"自爆 / 爆狼",d:"狼人白天主动自爆，立即终止当前发言直接入夜，可打乱好人节奏（白狼王自爆还能带人）。自爆不能发动附加技能。"}
+ ]},
+ {cat:"游戏流程规则",items:[
+   {t:"第二天天亮发言顺序",d:"首夜死亡玩家无遗言；第二天天亮后，由前一夜死亡玩家的位置开始，按顺时针/逆时针依次发言；若前一夜无死亡（平安夜），由警长指定发言顺序，或按上一轮发言顺序顺延。"},
+   {t:"遗言",d:"玩家出局（被放逐/被刀）时最后的发言机会，常用来留信息、指认狼人或交代警徽流。"}
+ ]},
+ {cat:"进阶高阶黑话",items:[
+   {t:"垫飞",d:"狼人故意站边真预言家，疯狂乱发言拉低真预言家好人面，将预言家垫出局（高级倒钩手法）。"},
+   {t:"抿身份",d:"通过发言、表情、投票猜测玩家是神、狼还是平民（『抿到X是女巫』）。"},
+   {t:"诈身份",d:"上警阶段平民/神假装预言家发查杀/金水，试探其他玩家反应（诈一诈找狼）。"},
+   {t:"外置位",d:"除焦点位、自己、队友之外的其余所有场上玩家（『外置位随便出』）。"},
+   {t:"盘逻辑",d:"梳理整场发言、投票行为，分析谁是狼人（『盘一波逻辑』）。"},
+   {t:"容错率",d:"场上好人还能承受几轮投错人，容错耗尽好人直接崩盘（狼刀/抗推逼近红线）。"},
+   {t:"狼坑",d:"推理出来大概率是狼的几名玩家名单（『狼坑X、Y、Z』）。"},
+   {t:"铁好人 / 铁狼",d:"铁好人 = 多方交叉验证、几乎确定是好人（如双预言家都发金水）；铁狼 = 板上钉钉的狼（如查杀+聊爆+自爆）。"},
+   {t:"焦点位",d:"全场关注、被重点分析的中心玩家（对跳双方、抗推位、归票目标都可能是焦点位）。"}
+ ]}
+];
+
+/* ============ 渲染：术语黑话 ============ */
+const termList=document.getElementById('termList');
+let curTermCat='all',curTermQ='';
+function renderTermChips(){
+  const cats=['全部',...TERMS.map(t=>t.cat)];
+  document.getElementById('termChips').innerHTML=cats.map((c,i)=>`<div class="chip ${i===0?'on':''}" data-cat="${c}">${c}</div>`).join('');
+}
+function renderTerms(){
+  const q=curTermQ.trim().toLowerCase();
+  let html='';
+  TERMS.forEach(g=>{
+    if(curTermCat!=='all'&&g.cat!==curTermCat)return;
+    const items=g.items.filter(it=>!q||(it.t+it.d).toLowerCase().includes(q));
+    if(!items.length)return;
+    html+=`<div class="term-cat">${g.cat}</div>`;
+    html+=items.map(it=>`<div class="term-card"><h3>${it.t}</h3><div class="df">${it.d}</div></div>`).join('');
+  });
+  termList.innerHTML=html||'<section class="empty">没有匹配的术语，换个关键词试试～</section>';
+}
+document.getElementById('termSearch').addEventListener('input',e=>{curTermQ=e.target.value;renderTerms();});
+document.getElementById('termChips').addEventListener('click',e=>{
+  if(!e.target.classList.contains('chip'))return;
+  document.querySelectorAll('#termChips .chip').forEach(c=>c.classList.remove('on'));
+  e.target.classList.add('on');curTermCat=e.target.dataset.cat;renderTerms();
+});
+document.getElementById('dicSeg').addEventListener('click',e=>{
+  if(!e.target.dataset.v)return;
+  document.querySelectorAll('#dicSeg button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  const v=e.target.dataset.v;
+  document.getElementById('roleView').style.display=v==='role'?'block':'none';
+  document.getElementById('termView').style.display=v==='term'?'block':'none';
+});
+renderTermChips();renderTerms();
 
 /* ============ 渲染：角色词典 ============ */
 const roleList=document.getElementById('roleList');
