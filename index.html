@@ -47,6 +47,8 @@ main{padding:14px 12px}
 .card .skill b{color:var(--gold)}
 .card .play{margin-top:6px;font-size:13px;color:var(--sub)}
 .card .boards{margin-top:8px;font-size:12px;color:var(--sub);border-top:1px dashed var(--line);padding-top:7px}
+.card .handsign{margin-top:7px;font-size:12.5px;line-height:1.6;color:var(--text);background:rgba(128,90,213,.12);border:1px solid rgba(128,90,213,.35);border-radius:8px;padding:8px 10px}
+.card .handsign b{color:var(--accent)}
 .diff{font-size:12px;color:var(--gold);margin-left:auto}
 
 .board-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -68,6 +70,7 @@ main{padding:14px 12px}
 .jrow select{flex:1;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:14px}
 .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 14px;font-size:14px;font-weight:600;width:100%;cursor:pointer}
 .btn.sec{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .jnight{display:flex;align-items:center;gap:8px;margin:12px 0;justify-content:center}
 .jnight button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:18px}
 .jnight span{font-size:15px;min-width:74px;text-align:center}
@@ -161,6 +164,37 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
 .order{display:flex;flex-wrap:wrap;gap:6px}
 .step{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin:3px 4px 3px 0;font-size:13px}
 .bdetail .order{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ============ A4 打印速查卡 ============ */
+.print-area{display:none}
+@media print{
+  @page{size:A4;margin:12mm}
+  html,body{background:#fff!important}
+  body>*{visibility:hidden!important}
+  #printArea,#printArea *{visibility:visible!important}
+  #printArea{display:block!important;position:absolute;left:0;top:0;width:100%;color:#111;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:12px;line-height:1.6}
+  .psheet .pt{font-size:14px;font-weight:700;color:#1d4ed8;margin:10px 0 6px;border-bottom:2px solid #1d4ed8;padding-bottom:3px}
+  .psheet .pcfg{font-size:13px;margin-bottom:6px}
+  .psheet h1{font-size:22px;margin-bottom:2px}
+  .psheet .pd{font-size:13px;color:#b45309}
+  .psheet .psub{font-size:12px;color:#555;margin-bottom:4px}
+  .ptab{width:100%;border-collapse:collapse;font-size:12px}
+  .ptab td{border:1px solid #ccc;padding:4px 6px;vertical-align:top}
+  .pbadge{display:inline-block;border:1px solid #888;border-radius:6px;padding:1px 7px;margin:2px;font-size:11px}
+  .pflow{display:flex;flex-wrap:wrap;gap:4px}
+  .pf{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 8px;font-size:11px}
+  .plist{margin:0 0 0 18px;padding:0}
+  .plist li{margin-bottom:4px;font-size:12px}
+  .plist b{color:#1d4ed8}
+  .pcard{margin-top:14px;border:2px dashed #1d4ed8;border-radius:10px;padding:10px 12px;page-break-inside:avoid}
+  .pcard .pct{font-size:15px;font-weight:800;color:#1d4ed8;margin-bottom:2px}
+  .pck-sub{font-size:11px;color:#555;margin-bottom:6px}
+  .pchk{margin:0;padding-left:4px;list-style:none}
+  .pchk .chk{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:3px}
+  .pchk .box{width:13px;height:13px;border:1.5px solid #555;border-radius:3px;flex:none}
+  .pck-tip{margin-top:8px;font-size:11px;color:#333;background:#f1f5f9;border-radius:6px;padding:7px 9px}
+  .pck-tip b{color:#b45309}
+}
 </style>
 </head>
 <body>
@@ -322,10 +356,16 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
       <div class="bsec"><div class="bti">✋ 相关手语（角色专属）</div><div class="bsigns" id="bmSign"></div></div>
       <div class="bsec"><div class="bti">🤙 通用手势暗语</div><div class="bsigns" id="bmGesture"></div></div>
       <div class="bsec"><div class="bti">⚠️ 相关注意事项</div><div class="bnotes" id="bmNotes"></div></div>
-      <button class="btn" id="bmJudge" style="width:100%;margin:4px 0 2px">⚖️ 用法官助手 →</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="bmPrint" style="flex:1;margin:4px 0 2px">🖨 打印 A4 速查卡</button>
+        <button class="btn" id="bmJudge" style="flex:1;margin:4px 0 2px">⚖️ 用法官助手 →</button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- A4 打印速查卡（仅打印时显示） -->
+<div id="printArea" class="print-area"></div>
 
 <nav id="nav">
   <button class="on" data-sec="dic"><span class="ic">📖</span>词典</button>
@@ -382,7 +422,7 @@ const BOARDS=[
  {n:"狼美人骑士",d:"⭐⭐",cfg:"4民 + 预言家、女巫、骑士、守卫 + 3普狼+狼美人",feat:"决斗对跳博弈",roles:["平民","预言家","女巫","骑士","守卫","普通狼人","狼美人"],comp:{god:4,civ:4,wolf:4}},
  {n:"狼王守卫",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+狼王",feat:"猎人狼王对跳",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","狼王"],comp:{god:4,civ:4,wolf:4}},
  {n:"白狼王守卫",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+白狼王",feat:"快节奏，爆神打法",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","白狼王"],comp:{god:4,civ:4,wolf:4}},
- {n:"恶灵骑士古堡板",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+恶灵骑士",feat:"海报主题板，反伤强神",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","恶灵骑士"],comp:{god:4,civ:4,wolf:4}},
+ {n:"恶灵骑士古堡板",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+恶灵骑士",feat:"海报主题板，反伤强神",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","恶灵骑士"],comp:{god:4,civ:4,wolf:4},aka:["恶灵骑士板","古堡恶灵骑士定制板","12人恶灵骑士预女猎守（古堡定制板）","恶灵骑士预女猎守","古堡定制板"]},
  {n:"机械狼通灵师",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+机械狼",feat:"京城大师赛招牌，真假通灵师大战",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","机械狼"],comp:{god:4,civ:4,wolf:4}},
  {n:"赤月猎魔人",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、愚者、猎魔人 + 3普狼+赤月使徒",feat:"高风险狩猎博弈",roles:["平民","预言家","女巫","愚者","猎魔人","普通狼人","赤月使徒"],comp:{god:4,civ:4,wolf:4}},
  {n:"迷雾鸦影",d:"⭐⭐⭐",cfg:"4民 + 炼金魔女、摄梦人、猎魔人、白痴 + 3普狼+蚀时狼妃",feat:"无女巫，限制狼刀体系",roles:["平民","炼金魔女","摄梦人","猎魔人","愚者","普通狼人","蚀时狼妃"],comp:{god:4,civ:4,wolf:4}},
@@ -629,12 +669,17 @@ renderTermChips();renderTerms();
 const roleList=document.getElementById('roleList');
 let curCat='all',curQ='';
 function badgeClass(cat){return cat==='神职'?'b-good':cat==='平民'?'b-civ':cat==='狼人'?'b-wolf':'b-third';}
+function boardMatch(p){
+  let b=BOARDS.find(x=>x.n===p);if(b)return b;
+  b=BOARDS.find(x=>(x.aka||[]).some(a=>a===p||a.includes(p)||p.includes(a)));if(b)return b;
+  b=BOARDS.find(x=>x.n.includes(p)||p.includes(x.n));if(b)return b;
+  return null;
+}
 function boardsOf(str){
   const parts=String(str).split(/[、,，]/).map(s=>s.trim()).filter(Boolean);
   return parts.map(p=>{
-    if(BOARDS.some(b=>b.n===p)) return `<span class="bchip" data-b="${p}">${p}</span>`;
-    const found=BOARDS.find(b=>b.n.includes(p)||p.includes(b.n));
-    if(found) return `<span class="bchip" data-b="${found.n}">${p}</span>`;
+    const b=boardMatch(p);
+    if(b) return `<span class="bchip" data-b="${b.n}">${p}</span>`;
     return `<span class="btxt">${p}</span>`;
   }).join(' ');
 }
@@ -650,13 +695,18 @@ function renderRoles(){
     return okCat&&okQ;
   });
   if(!arr.length){roleList.innerHTML='<section class="empty">没有匹配的角色，换个关键词试试～</section>';return;}
-  roleList.innerHTML=arr.map(r=>`
+  roleList.innerHTML=arr.map(r=>{
+    const sg=signForRole(r.n);
+    const sgHtml=sg?`<div class="handsign">✋ 该角色手语：<b>${sg.t.replace(' 手语','')}</b> — ${sg.d}</div>`:'';
+    return `
    <div class="card">
      <h3>${r.n}<span class="badge ${badgeClass(r.cat)}">${r.cat}</span><span class="diff">${r.d||''}</span></h3>
      <div class="skill"><b>技能：</b>${r.skill}</div>
      <div class="play"><b>玩法：</b>${r.play}</div>
      <div class="boards">适配板子：${boardsOf(r.b)}</div>
-   </div>`).join('');
+     ${sgHtml}
+   </div>`;
+  }).join('');
 }
 document.getElementById('roleSearch').addEventListener('input',e=>{curQ=e.target.value;renderRoles();});
 document.getElementById('roleChips').addEventListener('click',e=>{
@@ -761,7 +811,58 @@ function openBoardModal(name){
 function closeBoardModal(){document.getElementById('boardModal').classList.add('hidden');}
 document.getElementById('boardModal').addEventListener('click',e=>{ if(e.target.id==='boardModal') closeBoardModal(); });
 document.getElementById('bmClose').onclick=closeBoardModal;
+document.getElementById('bmPrint').onclick=()=>printBoardSheet(document.getElementById('bmName').textContent);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !document.getElementById('boardModal').classList.contains('hidden')) closeBoardModal(); });
+function printBoardSheet(name){
+  const b=BOARDS.find(x=>x.n===name);if(!b)return;
+  const order=nightOrderFor(b,1);
+  const campMap={'神职':[],'平民':[],'狼人':[],'第三方':[]};
+  b.roles.forEach(r=>{const rc=ROLES.find(x=>x.n===r);if(rc)campMap[rc.cat].push(r);});
+  const campColors={'神职':'#3b82f6','平民':'#10b981','狼人':'#ef4444','第三方':'#a855f7'};
+  let compHtml='';
+  Object.keys(campMap).forEach(c=>{ if(campMap[c].length) compHtml+=`<tr><td style="width:60px;font-weight:700;color:${campColors[c]}">${c}</td><td>${campMap[c].map(r=>`<span class="pbadge" style="border-color:${campColors[c]};color:${campColors[c]}">${r}</span>`).join(' ')}</td></tr>`; });
+  let signHtml='';
+  b.roles.forEach(r=>{const it=signForRole(r);if(it)signHtml+=`<li><b>${it.t.replace(' 手语','')}：</b>${it.d}</li>`;});
+  const gcat=TERMS.find(g=>g.cat==='手势暗语');
+  const gHtml=gcat?gcat.items.map(it=>`<li><b>${it.t}：</b>${it.d}</li>`).join(''):'';
+  const notes=boardNotes(b).map(n=>`<li><b>${n[0]}：</b>${n[1]}</li>`).join('');
+  const orderItems = [`天黑请闭眼`].concat(order.map(o=>o.n+(o.fn?'（首夜专属）':'')),[`天亮了`]);
+  const checklist=orderItems.map(o=>`<li class="chk"><span class="box"></span>${o}</li>`).join('');
+  const sheet=`
+   <div class="psheet">
+     <h1>${b.n} <span class="pd">${b.d}</span></h1>
+     <div class="psub">${b.feat} · 12人标准赛制（屠边局）</div>
+     <div class="pblock">
+       <div class="pt">📋 具体配置</div>
+       <div class="pcfg">${b.cfg}</div>
+       <table class="ptab">${compHtml}</table>
+     </div>
+     <div class="pblock">
+       <div class="pt">🌙 夜间唤醒顺序（第1夜）</div>
+       <div class="pflow">${orderItems.map((o,i)=>`<span class="pf">${i+1}. ${o}</span>`).join('')}</div>
+     </div>
+     <div class="pblock">
+       <div class="pt">✋ 相关手语（角色专属）</div>
+       <ul class="plist">${signHtml||'<li>本板无角色专属手语。</li>'}</ul>
+     </div>
+     <div class="pblock">
+       <div class="pt">🤙 通用手势暗语</div>
+       <ul class="plist">${gHtml}</ul>
+     </div>
+     <div class="pblock">
+       <div class="pt">⚠️ 相关注意事项</div>
+       <ul class="plist">${notes}</ul>
+     </div>
+   </div>
+   <div class="pcard">
+     <div class="pct">🎯 裁判速查卡 · ${b.n}</div>
+     <div class="pck-sub">夜间流程勾选（每夜按序唤醒，做完打✓）</div>
+     <ol class="pchk">${checklist}</ol>
+     <div class="pck-tip"><b>结算速记：</b>同守同救=死；猎人/狼王被毒不能开枪；狼美人仅白天带人；石像鬼/机械狼普狼全灭才刀人；恶灵骑士仅白天抗推出局。好人杀光狼人胜，狼人杀光神职或平民胜。</div>
+   </div>`;
+  document.getElementById('printArea').innerHTML=sheet;
+  window.print();
+}
 
 /* ============ 板子配置器：自定义 ============ */
 const customRoles=new Set();
