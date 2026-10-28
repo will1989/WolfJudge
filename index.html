@@ -865,9 +865,17 @@ function printBoardSheet(name){
   const doc=`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${b.n} 速查卡</title><style>${PRINT_CSS}</style></head><body>${sheet}</body></html>`;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('aria-hidden','true');
-  ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
-  ifr.onload=()=>{ try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(e){} setTimeout(()=>{ if(ifr.parentNode) ifr.parentNode.removeChild(ifr); },2000); };
+  // 关键：iframe 必须给真实尺寸并置于屏幕外（不能 0 尺寸/display:none/visibility:hidden），
+  // 否则 Chrome 打印时布局视口为 0，预览空白。
+  ifr.style.cssText='position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;background:#fff';
   document.body.appendChild(ifr);
+  ifr.onload=()=>{
+    // 等一帧让内容绘制完成，再触发打印，避免空白预览
+    setTimeout(()=>{
+      try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(e){}
+      setTimeout(()=>{ if(ifr.parentNode) ifr.parentNode.removeChild(ifr); },1500);
+    },150);
+  };
   ifr.srcdoc=doc;
 }
 
