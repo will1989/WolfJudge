@@ -891,71 +891,57 @@ function printBoardSheet(name){
   ifr.srcdoc=doc;
 }
 
-// 导出真正的 .pdf 速查卡：把内容用 SVG<foreignObject> 栅格化为图片，
-// 再用 pdf-lib 拼成 A4 PDF。中文靠系统字体栅格化，无需嵌入字体文件。
-let _pdfLib=null;
-function loadPdfLib(){
-  if(_pdfLib) return Promise.resolve(_pdfLib);
-  return new Promise((res,rej)=>{
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
-    s.onload=()=>{ _pdfLib=window.PDFLib; res(_pdfLib); };
-    s.onerror=rej;
-    document.head.appendChild(s);
-  });
+// 导出真正的 .pdf 速查卡：用 html2canvas 把内容节点栅格化为图片
+// （直接栅格化 DOM，不经过 SVG<foreignObject>，避免 Chrome 把 canvas 判为污染而无法导出），
+// 再用 pdf-lib 按 A4 切片拼成 PDF。中文靠系统字体栅格化，无需嵌入字体文件。
+let _pdfLib=null,_h2c=null;
+function loadScript(src){
+  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
 }
+function loadPdfLib(){ if(_pdfLib) return Promise.resolve(_pdfLib); return loadScript('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js').then(()=>{ _pdfLib=window.PDFLib; return _pdfLib; }); }
+function loadH2C(){ if(_h2c) return Promise.resolve(_h2c); return loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js').then(()=>{ _h2c=window.html2canvas; return _h2c; }); }
 
 async function exportBoardPDF(name){
   const docHtml=boardSheetDoc(name); if(!docHtml) return;
   const css=(docHtml.match(/<style>([\s\S]*?)<\/style>/)||[,''])[1];
   const body=(docHtml.match(/<body>([\s\S]*?)<\/body>/)||[,''])[1];
-  // 1) 先在页面离屏测量真实内容高度
-  const meas=document.createElement('div');
-  meas.style.cssText='position:absolute;left:-99999px;top:0;width:794px;background:#fff';
-  meas.innerHTML=`<style>${css}</style>`+body;
-  document.body.appendChild(meas);
-  const W=794, H=Math.max(meas.offsetHeight,1123);
-  document.body.removeChild(meas);
-  // 2) 用 SVG foreignObject 把内容画成图片（系统字体渲染中文）
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="background:#fff"><style>${css}</style>${body}</div></foreignObject></svg>`;
-  const svgUrl=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
-  const img=new Image();
-  img.width=W; img.height=H;
-  await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error('SVG渲染失败')); img.src=svgUrl; });
-  URL.revokeObjectURL(svgUrl);
-  // 3) 画到高清 canvas（2x）
-  const scale=2;
-  const full=document.createElement('canvas');
-  full.width=W*scale; full.height=H*scale;
-  const fctx=full.getContext('2d');
-  fctx.fillStyle='#fff'; fctx.fillRect(0,0,full.width,full.height);
-  fctx.scale(scale,scale);
-  fctx.drawImage(img,0,0,W,H);
-  // 4) 按 A4 切片拼 PDF
-  const lib=await loadPdfLib();
-  const {PDFDocument}=lib;
-  const pdf=await PDFDocument.create();
-  const pageWpt=595.28, pageHpt=841.89;          // A4 @72dpi
-  const ratio=W/H;                                // px 宽高比
-  const slicePx=pageHpt*ratio;                    // 每页对应的内容像素高度
-  for(let y=0;y<H;y+=slicePx){
-    const hSrc=Math.min(slicePx,H-y);
-    const sub=document.createElement('canvas');
-    sub.width=W*scale; sub.height=Math.ceil(hSrc*scale);
-    const sctx=sub.getContext('2d');
-    sctx.fillStyle='#fff'; sctx.fillRect(0,0,sub.width,sub.height);
-    sctx.drawImage(full,0,y*scale,W*scale,hSrc*scale,0,0,sub.width,sub.height);
-    const png=await pdf.embedPng(sub.toDataURL('image/png'));
-    const page=pdf.addPage([pageWpt,pageHpt]);
-    page.drawImage(png,{x:0,y:0,width:pageWpt,height:pageHpt});
+  // 离屏渲染节点（attach 到 DOM 才有布局）
+  const node=document.createElement('div');
+  node.style.cssText='position:absolute;left:-99999px;top:0;width:794px;background:#fff;padding:0';
+  node.innerHTML=`<style>${css}</style>`+body;
+  document.body.appendChild(node);
+  try{
+    const h2c=await loadH2C();
+    const scale=2;
+    const full=await h2c(node,{scale,backgroundColor:'#ffffff',logging:false,useCORS:true});
+    const W=794, H=full.height/scale;
+    const lib=await loadPdfLib();
+    const {PDFDocument}=lib;
+    const pdf=await PDFDocument.create();
+    const pageWpt=595.28, pageHpt=841.89;          // A4 @72dpi
+    const ratio=W/H;                                // px 宽高比
+    const slicePx=pageHpt*ratio;                    // 每页对应的内容像素高度
+    for(let y=0;y<H;y+=slicePx){
+      const hSrc=Math.min(slicePx,H-y);
+      const sub=document.createElement('canvas');
+      sub.width=W*scale; sub.height=Math.ceil(hSrc*scale);
+      const sctx=sub.getContext('2d');
+      sctx.fillStyle='#fff'; sctx.fillRect(0,0,sub.width,sub.height);
+      sctx.drawImage(full,0,y*scale,W*scale,hSrc*scale,0,0,sub.width,sub.height);
+      const png=await pdf.embedPng(sub.toDataURL('image/png'));
+      const page=pdf.addPage([pageWpt,pageHpt]);
+      page.drawImage(png,{x:0,y:0,width:pageWpt,height:pageHpt});
+    }
+    const bytes=await pdf.save();
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=(name||'狼人杀速查卡')+'-速查卡.pdf';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },500);
+  } finally {
+    document.body.removeChild(node);
   }
-  const bytes=await pdf.save();
-  const blob=new Blob([bytes],{type:'application/pdf'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=(name||'狼人杀速查卡')+'-速查卡.pdf';
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },500);
 }
 
 /* ============ 板子配置器：自定义 ============ */
