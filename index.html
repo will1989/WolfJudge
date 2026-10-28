@@ -166,35 +166,7 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
 .bdetail .order{display:flex;flex-wrap:wrap;gap:6px}
 
 /* ============ A4 打印速查卡 ============ */
-.print-area{display:none}
-@media print{
-  @page{size:A4;margin:12mm}
-  html,body{background:#fff!important}
-  body>*{visibility:hidden!important}
-  #printArea,#printArea *{visibility:visible!important}
-  #printArea{display:block!important;position:absolute;left:0;top:0;width:100%;color:#111;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:12px;line-height:1.6}
-  .psheet .pt{font-size:14px;font-weight:700;color:#1d4ed8;margin:10px 0 6px;border-bottom:2px solid #1d4ed8;padding-bottom:3px}
-  .psheet .pcfg{font-size:13px;margin-bottom:6px}
-  .psheet h1{font-size:22px;margin-bottom:2px}
-  .psheet .pd{font-size:13px;color:#b45309}
-  .psheet .psub{font-size:12px;color:#555;margin-bottom:4px}
-  .ptab{width:100%;border-collapse:collapse;font-size:12px}
-  .ptab td{border:1px solid #ccc;padding:4px 6px;vertical-align:top}
-  .pbadge{display:inline-block;border:1px solid #888;border-radius:6px;padding:1px 7px;margin:2px;font-size:11px}
-  .pflow{display:flex;flex-wrap:wrap;gap:4px}
-  .pf{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 8px;font-size:11px}
-  .plist{margin:0 0 0 18px;padding:0}
-  .plist li{margin-bottom:4px;font-size:12px}
-  .plist b{color:#1d4ed8}
-  .pcard{margin-top:14px;border:2px dashed #1d4ed8;border-radius:10px;padding:10px 12px;page-break-inside:avoid}
-  .pcard .pct{font-size:15px;font-weight:800;color:#1d4ed8;margin-bottom:2px}
-  .pck-sub{font-size:11px;color:#555;margin-bottom:6px}
-  .pchk{margin:0;padding-left:4px;list-style:none}
-  .pchk .chk{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:3px}
-  .pchk .box{width:13px;height:13px;border:1.5px solid #555;border-radius:3px;flex:none}
-  .pck-tip{margin-top:8px;font-size:11px;color:#333;background:#f1f5f9;border-radius:6px;padding:7px 9px}
-  .pck-tip b{color:#b45309}
-}
+/* 打印改由独立 iframe 文档（srcdoc 内联，零外部请求、不走 Service Worker），根治打印机"挂起" */
 </style>
 </head>
 <body>
@@ -364,9 +336,6 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
   </div>
 </div>
 
-<!-- A4 打印速查卡（仅打印时显示） -->
-<div id="printArea" class="print-area"></div>
-
 <nav id="nav">
   <button class="on" data-sec="dic"><span class="ic">📖</span>词典</button>
   <button data-sec="board"><span class="ic">🎲</span>板子</button>
@@ -433,7 +402,13 @@ const BOARDS=[
  {n:"奇迹商人狼王",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、奇迹商人 + 3普狼+狼王",feat:"首夜发技能博弈",roles:["平民","预言家","女巫","猎人","奇迹商人","普通狼人","狼王"],comp:{god:4,civ:4,wolf:4}},
  {n:"12人禁言长老娱乐板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、禁言长老 + 4普狼",feat:"干扰型神",roles:["平民","预言家","女巫","猎人","禁言长老","普通狼人"],comp:{god:4,civ:4,wolf:4}},
  {n:"熊娱乐板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、熊 + 4普狼",feat:"位置学排狼",roles:["平民","预言家","女巫","猎人","熊","普通狼人"],comp:{god:4,civ:4,wolf:4}},
- {n:"黑蝙蝠预女猎守",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+黑蝙蝠",feat:"黑蝙蝠反弹机制，狼大哥拓展板",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","黑蝙蝠"],comp:{god:4,civ:4,wolf:4}}
+ {n:"黑蝙蝠预女猎守",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+黑蝙蝠",feat:"黑蝙蝠反弹机制，狼大哥拓展板",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","黑蝙蝠"],comp:{god:4,civ:4,wolf:4}},
+ {n:"隐狼变体板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+隐狼",feat:"隐狼混好人，验出好人难盘",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","隐狼"],comp:{god:4,civ:4,wolf:4}},
+ {n:"种狼变体板",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+种狼",feat:"种狼感染转化核心神职",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","种狼"],comp:{god:4,civ:4,wolf:4}},
+ {n:"咒狐变体板",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+咒狐（第三方）",feat:"咒狐苟活，胜负边缘独胜",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","咒狐"],comp:{god:4,civ:4,wolf:4,third:1}},
+ {n:"盗贼变体板",d:"⭐⭐",cfg:"3民 + 预言家、女巫、猎人、守卫 + 4普狼+盗贼（首夜二选一）",feat:"盗贼首夜定身份，增加随机性",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","盗贼"],comp:{god:4,civ:3,wolf:4,third:1}},
+ {n:"野孩子变体板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+野孩子（可变）",feat:"榜样死亡野孩子倒戈狼队",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","野孩子"],comp:{god:4,civ:4,wolf:4,third:1}},
+ {n:"吹笛者变体板",d:"⭐⭐⭐",cfg:"3民 + 预言家、女巫、猎人、守卫 + 4普狼+吹笛者（第三方）",feat:"催眠全场，达成即独胜",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","吹笛者"],comp:{god:4,civ:3,wolf:4,third:1}}
 ];
 
 /* ============ 数据：夜间台词 ============ */
@@ -813,6 +788,33 @@ document.getElementById('boardModal').addEventListener('click',e=>{ if(e.target.
 document.getElementById('bmClose').onclick=closeBoardModal;
 document.getElementById('bmPrint').onclick=()=>printBoardSheet(document.getElementById('bmName').textContent);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !document.getElementById('boardModal').classList.contains('hidden')) closeBoardModal(); });
+const PRINT_CSS=`
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,"Microsoft YaHei",sans-serif}
+body{background:#fff;color:#111;padding:8mm;font-size:12px;line-height:1.6}
+@page{size:A4;margin:12mm}
+.psheet h1{font-size:22px;margin-bottom:2px;color:#111}
+.psheet .pd{font-size:13px;color:#b45309;font-weight:400}
+.psheet .psub{font-size:12px;color:#555;margin-bottom:6px}
+.pblock{margin-bottom:12px}
+.pt{font-size:14px;font-weight:700;color:#1d4ed8;margin:10px 0 6px;border-bottom:2px solid #1d4ed8;padding-bottom:3px}
+.pcfg{font-size:13px;margin-bottom:6px}
+.ptab{width:100%;border-collapse:collapse;font-size:12px}
+.ptab td{border:1px solid #ccc;padding:4px 6px;vertical-align:top}
+.pbadge{display:inline-block;border:1px solid #888;border-radius:6px;padding:1px 7px;margin:2px;font-size:11px}
+.pflow{display:flex;flex-wrap:wrap;gap:4px}
+.pf{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 8px;font-size:11px}
+.plist{margin:0 0 0 18px;padding:0}
+.plist li{margin-bottom:4px;font-size:12px}
+.plist b{color:#1d4ed8}
+.pcard{margin-top:14px;border:2px dashed #1d4ed8;border-radius:10px;padding:10px 12px;page-break-inside:avoid}
+.pcard .pct{font-size:15px;font-weight:800;color:#1d4ed8;margin-bottom:2px}
+.pck-sub{font-size:11px;color:#555;margin-bottom:6px}
+.pchk{margin:0;padding-left:4px;list-style:none}
+.pchk .chk{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:3px}
+.pchk .box{width:13px;height:13px;border:1.5px solid #555;border-radius:3px;flex:none}
+.pck-tip{margin-top:8px;font-size:11px;color:#333;background:#f1f5f9;border-radius:6px;padding:7px 9px}
+.pck-tip b{color:#b45309}
+`;
 function printBoardSheet(name){
   const b=BOARDS.find(x=>x.n===name);if(!b)return;
   const order=nightOrderFor(b,1);
@@ -860,8 +862,13 @@ function printBoardSheet(name){
      <ol class="pchk">${checklist}</ol>
      <div class="pck-tip"><b>结算速记：</b>同守同救=死；猎人/狼王被毒不能开枪；狼美人仅白天带人；石像鬼/机械狼普狼全灭才刀人；恶灵骑士仅白天抗推出局。好人杀光狼人胜，狼人杀光神职或平民胜。</div>
    </div>`;
-  document.getElementById('printArea').innerHTML=sheet;
-  window.print();
+  const doc=`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${b.n} 速查卡</title><style>${PRINT_CSS}</style></head><body>${sheet}</body></html>`;
+  const ifr=document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');
+  ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  ifr.onload=()=>{ try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(e){} setTimeout(()=>{ if(ifr.parentNode) ifr.parentNode.removeChild(ifr); },2000); };
+  document.body.appendChild(ifr);
+  ifr.srcdoc=doc;
 }
 
 /* ============ 板子配置器：自定义 ============ */
