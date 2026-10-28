@@ -791,7 +791,7 @@ const CAMP_LABEL={god:['神职','b-good'],civ:['平民','b-civ'],wolf:['狼人',
 let simState={god:0,civ:0,wolf:0,third:0};
 simBoard.innerHTML=BOARDS.map((b,i)=>`<option value="${i}">${b.n}</option>`).join('');
 function countsFromBoard(b){
-  if(b.comp) return {...b.comp};
+  if(b.comp) return {god:0,civ:0,wolf:0,third:0,...b.comp};
   const c={god:0,civ:0,wolf:0,third:0};
   b.roles.forEach(r=>{const role=ROLES.find(x=>x.n===r);if(role)c[role.cat==='神职'?'god':role.cat==='平民'?'civ':role.cat==='狼人'?'wolf':'third']++;});
   return c;
