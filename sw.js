@@ -18,6 +18,10 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  // 只接管 http/https 请求；chrome-extension / data / blob 等协议（常见于
+  // 浏览器扩展注入脚本）一律放行，不尝试缓存，否则 Cache.put 会抛 TypeError
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
   // 导航请求（HTML 页面）走网络优先，确保重新部署后用户拿到最新内容
   const isNavigation = e.request.mode === 'navigate' || url.pathname.endsWith('.html');
   if (isNavigation) {
@@ -25,14 +29,14 @@ self.addEventListener('fetch', (e) => {
       fetch(e.request)
         .then((resp) => {
           const copy = resp.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
           return resp;
         })
         .catch(() => caches.match(e.request).then((c) => c || caches.match('./index.html')))
     );
     return;
   }
-  // 其余静态资源（图标/清单）走缓存优先
+  // 其余同源静态资源（图标/清单）走缓存优先，仅缓存 http(s) 的基本响应
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
@@ -40,7 +44,7 @@ self.addEventListener('fetch', (e) => {
         .then((resp) => {
           if (resp && resp.status === 200 && resp.type === 'basic') {
             const copy = resp.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, copy));
+            caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
           }
           return resp;
         })
