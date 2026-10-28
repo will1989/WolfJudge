@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>狼人杀畅玩指南 · 角色词典+板子+法官助手+模拟器</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0f1117;--bg2:#161a24;--card:#1a1f2b;--card2:#212836;
+  --text:#e8ecf3;--sub:#9aa6b8;--line:#2a3142;
+  --good:#3b82f6;--civ:#22c55e;--wolf:#ef4444;--third:#a855f7;
+  --accent:#a78bfa;--gold:#fbbf24;
+}
+html,body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.6}
+body{padding-bottom:78px;max-width:760px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#161a24 0%,rgba(15,17,23,.92) 100%);backdrop-filter:blur(8px);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+header h1{font-size:19px;font-weight:700;letter-spacing:.5px}
+header h1 .wolf{color:var(--accent)}
+header p{font-size:12px;color:var(--sub);margin-top:2px}
+main{padding:14px 12px}
+.section{display:none;animation:fade .25s ease}
+.section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:15px;outline:none}
+.search:focus{border-color:var(--accent)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 4px;scrollbar-width:none;flex-wrap:wrap}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:var(--bg2);border:1px solid var(--line);color:var(--sub);font-size:13px;white-space:nowrap}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h3{font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
+.b-good{background:rgba(59,130,246,.18);color:#7fb0ff}
+.b-civ{background:rgba(34,197,94,.18);color:#5ee08c}
+.b-wolf{background:rgba(239,68,68,.18);color:#ff8585}
+.b-third{background:rgba(168,85,247,.18);color:#cf9bff}
+.card .skill{margin-top:8px;font-size:14px;color:var(--text)}
+.card .skill b{color:var(--gold)}
+.card .play{margin-top:6px;font-size:13px;color:var(--sub)}
+.card .boards{margin-top:8px;font-size:12px;color:var(--sub);border-top:1px dashed var(--line);padding-top:7px}
+.diff{font-size:12px;color:var(--gold);margin-left:auto}
+
+.board-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.bcard h4{font-size:15px;margin-bottom:4px}
+.bcard .cfg{font-size:11.5px;color:var(--sub);line-height:1.5}
+.bcard .go{margin-top:8px;display:inline-block;font-size:12px;color:var(--accent);font-weight:600}
+.bdetail{display:none}
+.bdetail.show{display:block}
+.bdetail .order{background:var(--bg2);border-radius:10px;padding:10px;margin-top:10px;font-size:13px;line-height:1.9}
+.bdetail .order .step{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin:3px 4px 3px 0}
+.order-title{font-size:13px;color:var(--accent);font-weight:600;margin-top:6px}
+
+.seg{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;background:none;border:none;color:var(--sub);padding:9px;border-radius:9px;font-size:14px;font-weight:600}
+.seg button.on{background:var(--accent);color:#fff}
+
+.jrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.jrow select{flex:1;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:14px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 14px;font-size:14px;font-weight:600;width:100%;cursor:pointer}
+.btn.sec{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.jnight{display:flex;align-items:center;gap:8px;margin:12px 0;justify-content:center}
+.jnight button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:18px}
+.jnight span{font-size:15px;min-width:74px;text-align:center}
+.acc{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.acc .hd{padding:12px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.acc .hd .tg{color:var(--accent);font-size:18px;transition:transform .2s}
+.acc.open .hd .tg{transform:rotate(45deg)}
+.acc .bd{padding:0 12px 12px;font-size:13.5px;color:var(--sub);display:none;line-height:1.7}
+.acc.open .bd{display:block}
+.acc .bd b{color:var(--gold)}
+
+.cheat .item{background:var(--card);border-left:3px solid var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13.5px}
+.cheat .item b{color:var(--gold)}
+.cheat h2{font-size:15px;margin:14px 0 8px;color:var(--accent)}
+
+.timer-display{font-size:52px;font-weight:700;text-align:center;letter-spacing:2px;margin:8px 0;font-variant-numeric:tabular-nums}
+.timer-display.ring{color:var(--wolf);animation:flash .5s steps(2) infinite}
+@keyframes flash{50%{opacity:.25}}
+.timer-presets,.timer-ctrl{display:flex;gap:8px;margin-top:8px}
+.timer-presets button,.timer-ctrl button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:14px}
+.timer-ctrl #tStart{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.sim-counts .row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.sim-counts .row .lab{font-size:14px}
+.sim-counts .row .lab .b{font-size:11px;padding:1px 7px;border-radius:5px;margin-left:6px}
+.sim-counts .row .v{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:700}
+.sim-counts .row .v button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:17px}
+.ev-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;flex-wrap:wrap}
+.ev-row .lab{width:100%;font-size:13px;color:var(--text);font-weight:600;margin-bottom:2px}
+.ev-row select{flex:1;min-width:130px;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px}
+.ev-row label{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub)}
+#simResult .res-item{font-size:14px;padding:6px 0;border-bottom:1px solid var(--line)}
+#simResult .verdict{font-size:17px;font-weight:700;padding:10px 0;text-align:center;border-radius:10px;margin-bottom:8px}
+.verdict.good{background:rgba(59,130,246,.15);color:#7fb0ff}
+.verdict.wolf{background:rgba(239,68,68,.15);color:#ff8585}
+.verdict.continue{background:rgba(34,197,94,.15);color:#5ee08c}
+
+.installed-tip{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);color:var(--sub);font-size:12px;padding:7px 14px;border-radius:20px;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none}
+.installed-tip.show{opacity:1}
+
+.overlay{position:fixed;inset:0;z-index:50;background:#0b0d12;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 18px env(safe-area-inset-bottom)}
+.overlay.hidden{display:none}
+.step-head{display:flex;justify-content:space-between;align-items:center;padding:16px 4px;font-size:14px;color:var(--sub)}
+.step-head .rn{color:var(--accent);font-weight:700;font-size:16px}
+.step-body{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px}
+.step-body .big{font-size:clamp(20px,6vw,30px);line-height:1.7;font-weight:600}
+.step-note{text-align:center;color:var(--sub);font-size:13px;padding:0 10px 10px;min-height:20px}
+.step-controls{display:flex;gap:10px;padding:14px 0}
+.step-controls button{flex:1;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:16px;font-weight:600}
+.step-controls #nextStep{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--bg2);border-top:1px solid var(--line);display:flex;padding:6px 2px calc(6px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+nav button{flex:1;background:none;border:none;color:var(--sub);font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer}
+nav button .ic{font-size:19px;line-height:1}
+nav button.on{color:var(--accent)}
+section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="wolf">🐺</span> 狼人杀畅玩指南</h1>
+  <p>角色词典 · 板子配置 · 法官助手 · 结算模拟 · 离线可用</p>
+</header>
+
+<main>
+  <!-- 角色词典 -->
+  <section id="sec-dic" class="section active">
+    <input class="search" id="roleSearch" placeholder="🔍 搜角色 / 技能 / 板子，如：机械狼、自爆、通灵">
+    <div class="chips" id="roleChips">
+      <div class="chip on" data-cat="all">全部</div>
+      <div class="chip" data-cat="神职">神职</div>
+      <div class="chip" data-cat="平民">平民</div>
+      <div class="chip" data-cat="狼人">狼人</div>
+      <div class="chip" data-cat="第三方">第三方</div>
+    </div>
+    <div id="roleList"></div>
+  </section>
+
+  <!-- 板子配置器 -->
+  <section id="sec-board" class="section">
+    <div class="seg" id="boardSeg">
+      <button class="on" data-v="preset">预设板子</button>
+      <button data-v="custom">自定义配置</button>
+    </div>
+    <div id="presetView">
+      <div class="card" style="margin-bottom:12px">
+        <h3 style="font-size:15px">选择板子 → 自动生成角色构成 + 本板夜间唤醒顺序</h3>
+        <p style="font-size:12px;color:var(--sub);margin-top:4px">点开任意板子查看详情，再点「用法官助手」进入分步流程。</p>
+      </div>
+      <div class="board-grid" id="boardGrid"></div>
+    </div>
+    <div id="customView" style="display:none">
+      <div class="card">
+        <h3 style="font-size:15px">勾选本局上场的角色</h3>
+        <p style="font-size:12px;color:var(--sub);margin-top:4px">勾选后自动生成本局夜间唤醒顺序与角色构成，并可一键喂给法官助手。</p>
+        <div class="chips" id="customChips" style="padding-left:0;padding-right:0"></div>
+      </div>
+      <div class="card" id="customPreview"></div>
+      <button class="btn" id="customJudge">⚖️ 用法官助手（自定义板子）</button>
+    </div>
+  </section>
+
+  <!-- 法官助手 -->
+  <section id="sec-judge" class="section">
+    <div class="jrow">
+      <select id="judgeBoard"></select>
+    </div>
+    <div class="jnight">
+      <button id="nightMinus">−</button>
+      <span>第 <b id="nightNum">1</b> 夜</span>
+      <button id="nightPlus">+</button>
+    </div>
+    <button class="btn" id="startNight">▶ 开始本夜流程（法官照着念）</button>
+    <button class="btn sec" id="showOrder" style="margin-top:8px">📋 查看本板夜间顺序</button>
+    <div id="orderBox" class="bdetail" style="margin-top:12px"></div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>⏱ 法官倒计时（白天发言计时）</h3>
+      <div class="timer-display" id="timerDisp">02:00</div>
+      <div class="timer-presets">
+        <button data-s="60">60s</button><button data-s="120">120s</button><button data-s="180">180s</button>
+      </div>
+      <div class="timer-ctrl">
+        <button id="tStart">开始</button><button id="tPause">暂停</button><button id="tReset">重置</button>
+      </div>
+    </div>
+
+    <h2 style="font-size:15px;margin:18px 0 8px;color:var(--accent)">白天 / 结算 / 胜负 台词速查</h2>
+    <div id="dayAcc"></div>
+  </section>
+
+  <!-- 结算模拟器 -->
+  <section id="sec-sim" class="section">
+    <div class="card">
+      <h3>选择板子（自动带入初始人数）</h3>
+      <select id="simBoard" style="width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:14px;margin-top:6px"></select>
+      <div class="sim-counts" id="simCounts" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>今夜 / 本回合事件</h3>
+      <div id="simEvents"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" id="simRun">▶ 结算本夜</button>
+      <button class="btn sec" id="simReset" style="width:auto;flex:0 0 90px">重置</button>
+    </div>
+    <div class="card" id="simResult" style="margin-top:12px;display:none"></div>
+  </section>
+
+  <!-- 资料：小抄 + FAQ -->
+  <section id="sec-info" class="section cheat">
+    <h2>🎯 屠边规则</h2>
+    <div class="item">12人屠边局：好人胜 = 狼人全灭；狼人胜 = <b>所有神职</b> 或 <b>所有平民</b> 出局（二选一即可）。</div>
+    <h2>👨‍⚖️ 法官唤醒原则</h2>
+    <div class="item">先开局特殊角色 → 功能神 → 信息神 → 特殊狼 → 狼刀 → 女巫 → 后置信息位。</div>
+    <h2>⚠️ 必记结算坑</h2>
+    <div class="item">同守同救 = <b>死亡</b>（守卫+女巫解药给同一人）。</div>
+    <div class="item">恶灵骑士：夜间免疫刀/毒；验/毒触发<b>一次</b>反伤后失效；仅白天抗推才死，不能自爆自刀。</div>
+    <div class="item">石像鬼：普狼全部出局后才能刀人；机械狼：普狼存活不能刀人，学狼后普狼死光解锁<b>双刀</b>。</div>
+    <div class="item">摄梦：连摄同一人两晚直接死；摄梦人死，当夜所有被摄梦者一同出局。</div>
+    <div class="item">狼美人：夜里死不带人，仅<b>白天放逐</b>带人，不可连续魅惑。</div>
+    <div class="item">纯白之女：第一晚只报阵营，第二晚起验狼直接处决。</div>
+    <div class="item">奇迹商人给到狼人 → 商人当夜直接死亡。</div>
+    <div class="item">猎人/狼王/学猎人的机械狼：被刀·被投可开枪；<b>被毒杀不能开枪</b>。</div>
+    <h2>🌙 标准夜间顺序（通用）</h2>
+    <div class="item" id="cheatOrder" style="border-left-color:var(--good)"></div>
+    <h2>🏆 胜负判定</h2>
+    <div class="item">好人屠边胜利：所有狼人出局。狼人屠边胜利：神职/平民全灭。第三方：达成专属条件即胜。</div>
+
+    <h2 style="margin-top:18px">❓ FAQ · 高频结算问答</h2>
+    <div id="faqAcc"></div>
+  </section>
+</main>
+
+<div class="installed-tip" id="instTip">已可离线使用 · 可「添加到主屏幕」</div>
+
+<!-- step overlay -->
+<div class="overlay hidden" id="stepOverlay">
+  <div class="step-head"><span class="rn" id="stepRole">开场</span><span id="stepCount">1 / 1</span></div>
+  <div class="step-body"><div class="big" id="stepBody"></div></div>
+  <div class="step-note" id="stepNote"></div>
+  <div class="step-controls">
+    <button id="prevStep">‹ 上一步</button>
+    <button id="exitStep">退出</button>
+    <button id="nextStep">下一步 ›</button>
+  </div>
+</div>
+
+<nav id="nav">
+  <button class="on" data-sec="dic"><span class="ic">📖</span>词典</button>
+  <button data-sec="board"><span class="ic">🎲</span>板子</button>
+  <button data-sec="judge"><span class="ic">⚖️</span>法官</button>
+  <button data-sec="sim"><span class="ic">🧮</span>模拟</button>
+  <button data-sec="info"><span class="ic">📝</span>资料</button>
+</nav>
+
+<script>
+/* ============ 数据：角色 ============ */
+const ROLES=[
+ {n:"预言家",cat:"神职",skill:"每晚查验1名玩家，只获得【好人/狼人】阵营，不知道具体身份；可竞选警长，警长拥有1.5票。",play:"警上优先起跳，清晰报查验+警徽流，好人信息核心，尽量不要藏。",b:"预女猎白、石像鬼守墓人、狼美人骑士",d:"⭐"},
+ {n:"女巫",cat:"神职",skill:"1瓶解药、1瓶毒药；一晚只能用一瓶；多数板子首夜允许自救，高阶板禁止自救；解药救活夜间刀伤玩家，毒药夜间毒死一人。",play:"解药优先保住预言家/核心神；毒药谨慎，不盲毒；可藏可跳，好人最强追轮次神。",b:"绝大多数12人板子通用",d:"⭐"},
+ {n:"猎人",cat:"神职",skill:"夜间被狼刀、白天被投票放逐，可以开枪带走一名存活玩家；被女巫毒杀无法开枪。",play:"可藏身份；狼人穿猎人衣服时起跳拍悍跳狼；出局带人优先选发言明显的狼人。",b:"预女猎白、恶灵骑士板、石像鬼守墓人、机械狼通灵师",d:"⭐"},
+ {n:"愚者（白痴）",cat:"神职",skill:"白天被投票放逐不会出局，翻牌亮身份；翻牌后永久失去投票权，仍可发言；夜里死亡正常出局。",play:"抗压位，被抗推自证身份；不主动起跳，帮好人扛推。",b:"预女猎白",d:"⭐"},
+ {n:"守卫",cat:"神职",skill:"每晚守护一名玩家，抵挡狼刀；不能连续两晚守护同一个人；守护+女巫解药同时给同一人 → 同守同救，目标直接死亡。",play:"优先保护女巫、预言家；必要时空守规避同守同救，轮次博弈强。",b:"狼王守卫、狼美人骑士、机械狼通灵师",d:"⭐⭐"},
+ {n:"守墓人",cat:"神职",skill:"每晚得知【上一个白天被放逐出局玩家】是好人/狼人，只给阵营，不给具体身份。",play:"前期低调，出现关键抗推后再跳，修正好人视角；无自保，易被狼优先找。",b:"石像鬼守墓人",d:"⭐⭐"},
+ {n:"通灵师",cat:"神职",skill:"每晚查验一名玩家，直接看到完整身份牌（猎人/恶灵骑士/石像鬼/机械狼等，不止阵营），顶级信息神。",play:"警上起跳，用身份信息压制隐狼、石像鬼、机械狼；狼队大概率悍跳通灵师，真假对局是核心看点。",b:"通灵师石像鬼、机械狼通灵师、古堡恶灵骑士定制板",d:"⭐⭐⭐"},
+ {n:"摄梦人",cat:"神职",skill:"每晚选择一名玩家摄梦；当夜该玩家免疫死亡；连续两晚摄同一人，该玩家直接出局；摄梦人死亡，当晚所有被他摄梦的玩家一同出局。",play:"保护核心神职，也可连续摄梦刺杀明狼；技能双刃剑，谨慎连摄。",b:"狼王摄梦人",d:"⭐⭐⭐"},
+ {n:"猎魔人",cat:"神职",skill:"每晚狩猎一名玩家；狩猎到狼人，狼人直接死亡；狩猎到好人，猎魔人自己出局；技能不限次数。",play:"前期保守，有清晰狼坑再狩猎，禁止盲猎；高风险强追轮次神。",b:"赤月猎魔人、迷雾鸦影",d:"⭐⭐⭐"},
+ {n:"骑士",cat:"神职",skill:"白天发言阶段可翻牌决斗一名玩家；对方是狼人→狼人出局；对方是好人→骑士自己出局；整局仅一次决斗机会。",play:"专门戳穿悍跳狼，对跳环节最强自证神；不要随便决斗外置位玩家。",b:"狼美人骑士",d:"⭐⭐"},
+ {n:"炼金魔女",cat:"神职",skill:"无毒药；首夜可自救；一次性技能【未明之雾】：夜晚锁定3名玩家，狼人当晚只能在这3人里开刀。",play:"主打限制狼刀，没有毒的追轮次能力，对局节奏偏慢。",b:"迷雾鸦影",d:"⭐⭐⭐"},
+ {n:"纯白之女",cat:"神职",skill:"第一晚查验只报阵营；第二晚起，查验到狼人直接处决狼人；验好人只给阵营信息。",play:"前期藏身份，第二夜之后杀伤力极强，狼队首要目标。",b:"纯白狼王",d:"⭐⭐⭐"},
+ {n:"禁言长老",cat:"神职",skill:"每晚禁言一名玩家，该玩家下一个白天不能发言，但可以投票；不限次数。",play:"限制煽动能力强的狼人；干扰型神，没有追轮次能力。",b:"12人禁言长老娱乐板",d:"⭐⭐"},
+ {n:"奇迹商人",cat:"神职",skill:"仅首夜行动，给任意一名玩家发放一次性技能：查验/护盾/毒药；如果给到狼人，奇迹商人当夜直接死亡。",play:"首夜博弈，尽量给可信好人；给错直接暴毙，风险很高。",b:"奇迹商人狼王",d:"⭐⭐"},
+ {n:"熊",cat:"神职",skill:"天亮法官公布：熊左右存活玩家里有狼→熊咆哮；左右无狼→不咆哮；熊死亡后不再咆哮。",play:"被动信息神，依靠位置学排狼。",b:"熊娱乐板",d:"⭐"},
+ {n:"平民",cat:"平民",skill:"无夜间技能，拥有白天投票权。",play:"闭眼听发言盘逻辑，帮助神职找狼；可以跳神挡刀，是屠边目标之一。",b:"全部板子标配",d:"⭐"},
+ {n:"高级村民",cat:"平民",skill:"平民，底牌翻开就是铁好人。",play:"可以直接起跳，给好人稳定逻辑基点。",b:"娱乐变体",d:"⭐"},
+ {n:"普通狼人",cat:"狼人",skill:"夜晚和狼队友一起睁眼刀人；白天可以自爆（终止发言直接入夜，自爆不能发动附加技能）。",play:"悍跳预言家、倒钩、冲锋、垫飞，配合特殊狼打战术。",b:"所有板子标配",d:"⭐"},
+ {n:"白狼王",cat:"狼人",skill:"和狼队一起刀人；主动自爆时可带走一名玩家；被投票放逐、被毒杀不能带人。",play:"警上直接爆带走预言家/女巫，废掉好人核心神。",b:"白狼王守卫",d:"⭐⭐"},
+ {n:"狼王",cat:"狼人",skill:"和狼队一起刀人；被投票放逐、夜间被刀死可以开枪带人；自爆、被女巫毒杀不能开枪。",play:"伪装猎人，和真猎人对跳，抗推后开枪带走关键神职。",b:"狼王守卫、狼王摄梦人",d:"⭐⭐"},
+ {n:"石像鬼",cat:"狼人",skill:"不和普狼一起睁眼；每晚单独查验一名玩家完整身份；石像鬼认识所有狼队友，狼队友不认识石像鬼；所有普狼出局之后石像鬼才可以刀人；不能自爆。",play:"长期倒钩好人，藏身份给狼队传递信息；好人最难盘的角色之一。",b:"石像鬼守墓人、通灵师石像鬼",d:"⭐⭐⭐"},
+ {n:"机械狼",cat:"狼人",skill:"不和普狼见面，互不认识；不能自爆；首夜唯一一次学习机会，学习一名玩家获得其身份和技能（次夜生效）；学平民无技能、学猎人满足条件可开枪、学守卫获守护、学女巫只有毒药、学通灵师每晚查验完整身份、学狼人普狼全灭后解锁双刀。普狼存活期间不能刀人。",play:"首夜优先学习强神，混在好人堆伪装神职，和真通灵师对跳；等普狼全部阵亡后收割。",b:"机械狼通灵师",d:"⭐⭐⭐"},
+ {n:"狼美人",cat:"狼人",skill:"和狼队一起刀人；每晚魅惑一名玩家；不能连续两晚魅惑同一个人；狼美人白天被投票放逐，被魅惑玩家一同出局；夜里死亡不带人。",play:"优先魅惑女巫、守卫、预言家；争取白天被抗推打出双死。",b:"狼美人骑士",d:"⭐⭐"},
+ {n:"恶灵骑士",cat:"狼人",skill:"和狼队一起刀人；不能自爆、不能自刀；被动：夜间免疫狼刀、女巫毒药；一次性反伤：预言家查验→预言家出局，女巫毒→女巫出局（触发一次永久失效）；只有白天被投票抗推才会出局。",play:"倒钩引诱预言家查验、女巫下毒，废掉好人双强神；不要过早触发反伤。",b:"12人恶灵骑士预女猎守（古堡定制板）",d:"⭐⭐⭐"},
+ {n:"赤月使徒",cat:"狼人",skill:"第一次被投票放逐不会死亡，翻牌封印自己；场上神职≤2 或 平民≤2，解封回归狼队，获得一次刀人机会。",play:"主动吃抗推保留狼轮次，后期返场补刀。",b:"赤月猎魔人",d:"⭐⭐⭐"},
+ {n:"蚀时狼妃",cat:"狼人",skill:"每晚锁定一名玩家；当夜对该玩家的第一次技能（刀、毒、查验）全部无效；不能连续锁定同一个人。",play:"保护狼队友，抵消查验、毒药，功能性极强。",b:"迷雾鸦影",d:"⭐⭐⭐"},
+ {n:"隐狼",cat:"狼人",skill:"不和狼队见面，互相不认识；预言家查验隐狼结果为好人；胜利条件和普狼一致。",play:"混在好人阵营，听发言寻找狼队友，暗中帮狼冲票。",b:"隐狼变体板",d:"⭐⭐"},
+ {n:"种狼",cat:"狼人",skill:"狼刀结束后单独睁眼；可将当夜刀中的玩家感染为狼人；被女巫解药救起则感染失败；被感染玩家失去原有技能变成狼人。",play:"优先感染强神职，转化好人核心战力。",b:"种狼变体板",d:"⭐⭐⭐"},
+ {n:"丘比特",cat:"第三方",skill:"首夜连接两名玩家成为情侣；人人/狼狼情侣跟随原阵营；人狼情侣组成第三方，需杀光场上其余所有人获胜。",play:"链子是对局核心，人狼链进入三方混战。",b:"丘比特炸弹人娱乐板",d:"⭐⭐⭐"},
+ {n:"炸弹人",cat:"第三方",skill:"白天被投票放逐出局时引爆，所有投炸弹人的玩家一同出局；夜间死亡不会爆炸。",play:"全场不敢轻易出你，拉扯位；好人、狼人都需要拉拢炸弹人。",b:"丘比特炸弹人",d:"⭐⭐⭐"},
+ {n:"咒狐",cat:"第三方",skill:"狼人刀咒狐不会死亡；预言家查验咒狐→咒狐直接出局；好人、狼分出胜负时，咒狐存活则咒狐单独胜利。",play:"低调苟活，躲避预言家查验，消耗好人狼人的轮次。",b:"咒狐变体板",d:"⭐⭐⭐"},
+ {n:"吹笛者",cat:"第三方",skill:"每晚催眠两名玩家；当所有存活玩家全部被催眠，吹笛者单独获胜。",play:"慢慢叠加催眠标记，隐藏身份，避免被优先抗推。",b:"吹笛者变体板",d:"⭐⭐⭐"},
+ {n:"盗贼",cat:"第三方",skill:"首夜最先睁眼，从两张底牌选择一张作为自己身份，另一张直接埋掉；两张牌里有狼必须选狼；拿到身份后归属对应阵营。",play:"改变板子构成，增加随机性。",b:"盗贼变体板",d:"⭐⭐"},
+ {n:"野孩子",cat:"第三方",skill:"首夜选择一名榜样；榜样存活属于好人，榜样出局变狼人，和狼队一起刀人。",play:"前期站边好人，榜样死亡之后倒戈狼队。",b:"野孩子变体板",d:"⭐⭐"}
+];
+
+/* ============ 数据：板子 ============ */
+const BOARDS=[
+ {n:"预女猎白",d:"⭐",cfg:"4民 + 预言家、女巫、猎人、愚者 + 4普狼",feat:"新手入门标准板",roles:["平民","预言家","女巫","猎人","愚者","普通狼人"]},
+ {n:"石像鬼守墓人",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守墓人 + 3普狼+石像鬼",feat:"当下热门进阶板",roles:["平民","预言家","女巫","猎人","守墓人","普通狼人","石像鬼"]},
+ {n:"狼美人骑士",d:"⭐⭐",cfg:"4民 + 预言家、女巫、骑士、守卫 + 3普狼+狼美人",feat:"决斗对跳博弈",roles:["平民","预言家","女巫","骑士","守卫","普通狼人","狼美人"]},
+ {n:"狼王守卫",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+狼王",feat:"猎人狼王对跳",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","狼王"]},
+ {n:"白狼王守卫",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、守卫 + 3普狼+白狼王",feat:"快节奏，爆神打法",roles:["平民","预言家","女巫","猎人","守卫","普通狼人","白狼王"]},
+ {n:"恶灵骑士古堡板",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+恶灵骑士",feat:"海报主题板，反伤强神",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","恶灵骑士"]},
+ {n:"机械狼通灵师",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+机械狼",feat:"京城大师赛招牌，真假通灵师大战",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","机械狼"]},
+ {n:"赤月猎魔人",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、愚者、猎魔人 + 3普狼+赤月使徒",feat:"高风险狩猎博弈",roles:["平民","预言家","女巫","愚者","猎魔人","普通狼人","赤月使徒"]},
+ {n:"迷雾鸦影",d:"⭐⭐⭐",cfg:"4民 + 炼金魔女、摄梦人、猎魔人、白痴 + 3普狼+蚀时狼妃",feat:"无女巫，限制狼刀体系",roles:["平民","炼金魔女","摄梦人","猎魔人","愚者","普通狼人","蚀时狼妃"]},
+ {n:"丘比特炸弹人",d:"⭐⭐⭐",cfg:"2民 + 预言家、女巫、猎人、守卫、丘比特 + 3普狼+狼美人+炸弹人",feat:"三方娱乐混战",roles:["平民","预言家","女巫","猎人","守卫","丘比特","普通狼人","狼美人","炸弹人"]},
+ {n:"纯白狼王",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、纯白之女 + 3普狼+狼王",feat:"纯白之女第二夜起验狼处决",roles:["平民","预言家","女巫","猎人","纯白之女","普通狼人","狼王"]},
+ {n:"狼王摄梦人",d:"⭐⭐⭐",cfg:"4民 + 预言家、女巫、猎人、摄梦人 + 3普狼+狼王",feat:"摄梦连摄刺杀",roles:["平民","预言家","女巫","猎人","摄梦人","普通狼人","狼王"]},
+ {n:"通灵师石像鬼",d:"⭐⭐⭐",cfg:"4民 + 通灵师、女巫、猎人、守卫 + 3普狼+石像鬼",feat:"真假通灵师+石像鬼",roles:["平民","通灵师","女巫","猎人","守卫","普通狼人","石像鬼"]},
+ {n:"奇迹商人狼王",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、奇迹商人 + 3普狼+狼王",feat:"首夜发技能博弈",roles:["平民","预言家","女巫","猎人","奇迹商人","普通狼人","狼王"]},
+ {n:"12人禁言长老娱乐板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、禁言长老 + 4普狼",feat:"干扰型神",roles:["平民","预言家","女巫","猎人","禁言长老","普通狼人"]},
+ {n:"熊娱乐板",d:"⭐⭐",cfg:"4民 + 预言家、女巫、猎人、熊 + 4普狼",feat:"位置学排狼",roles:["平民","预言家","女巫","猎人","熊","普通狼人"]}
+];
+
+/* ============ 数据：夜间台词 ============ */
+const NIGHT={
+ "盗贼":{s:"盗贼请睁眼，请在两张底牌中选择一张，另一张埋掉。盗贼请闭眼。",n:"首夜专属"},
+ "丘比特":{s:"丘比特请睁眼，请选择你要连为情侣的两名玩家。丘比特，请确认是否指定这两名玩家为情侣。丘比特请闭眼。情侣请互相确认，情侣请闭眼。",n:"首夜专属"},
+ "野孩子":{s:"野孩子请睁眼，请选择你的榜样。野孩子请闭眼。",n:"首夜专属"},
+ "蚀时狼妃":{s:"蚀时狼妃请睁眼，请选择你今晚要封印技能的玩家，不能连续两晚选择同一个人。蚀时狼妃请闭眼。",n:""},
+ "奇迹商人":{s:"奇迹商人请睁眼，请选择一名玩家，给他一份技能：查验/护盾/毒药。奇迹商人请闭眼。",n:"仅首夜"},
+ "炼金魔女":{s:"炼金魔女请睁眼，请选择三名玩家放置未明之雾，今晚狼人只能在这三个人里开刀。炼金魔女请闭眼。",n:"仅首夜"},
+ "禁言长老":{s:"禁言长老请睁眼，请选择一名玩家，该玩家明天白天不能发言，可以投票。禁言长老请闭眼。",n:""},
+ "摄梦人":{s:"摄梦人请睁眼，请选择一名玩家进行摄梦。连续两晚摄同一名玩家，该玩家将出局。摄梦人请闭眼。",n:""},
+ "守卫":{s:"守卫请睁眼，请选择你今晚要守护的玩家，不能连续两晚守护同一个人。守卫请闭眼。",n:""},
+ "猎魔人":{s:"猎魔人请睁眼，请选择一名玩家进行狩猎。如果对方是狼人，对方死亡；如果是好人，猎魔人出局。猎魔人请闭眼。",n:""},
+ "预言家":{s:"预言家请睁眼，请选择你今晚要查验的玩家。这个玩家的身份是【好人/狼人】，预言家请闭眼。",n:"大拇指向上=好人，向下=狼人"},
+ "通灵师":{s:"通灵师请睁眼，请选择你今晚要查验的玩家（直接告知完整身份）。通灵师请闭眼。",n:""},
+ "纯白之女":{s:"纯白之女请睁眼，请选择你今晚要查验的玩家。纯白之女请闭眼。",n:"第一晚只报阵营；第二晚起验狼直接处决"},
+ "石像鬼":{s:"石像鬼请睁眼，请选择你今晚要查验的玩家（告知完整身份）。石像鬼请闭眼。",n:"普狼全灭后才能刀人"},
+ "机械狼":{s:"机械狼请睁眼，你可以选择使用你学到的技能。机械狼请闭眼。",n:"",first:"机械狼请睁眼，请选择一名玩家进行学习，你将获知他的身份并习得技能，习得的技能下一晚才可以使用，全局仅一次学习机会。机械狼请闭眼。"},
+ "狼美人":{s:"狼美人请睁眼，请选择你今晚要魅惑的玩家，不能连续两晚魅惑同一个人。狼美人请闭眼。",n:""},
+ "狼人":{s:"狼人请睁眼，请互相确认队友，请选择今晚要刀的玩家。狼人请确认，今晚要击杀的是这名玩家吗？狼人请闭眼。",n:""},
+ "种狼":{s:"种狼请睁眼，你可以选择感染今晚被刀的这名玩家，若被女巫救走，感染失败。种狼请闭眼。",n:""},
+ "女巫":{s:"女巫请睁眼，今晚这名玩家被刀了，你要使用解药救他吗？你要使用毒药毒死一名玩家吗？一晚只能使用一瓶药。",n:"首夜可自救板子：刀到女巫可自救"},
+ "守墓人":{s:"守墓人请睁眼，昨天白天被放逐出局的玩家是【好人/狼人】。守墓人请闭眼。",n:""},
+ "吹笛者":{s:"吹笛者请睁眼，请选择今晚要催眠的两名玩家。吹笛者请闭眼。",n:""}
+};
+const CANON=["蚀时狼妃","奇迹商人","炼金魔女","禁言长老","摄梦人","守卫","猎魔人","预言家","通灵师","纯白之女","石像鬼","机械狼","狼美人","狼人","种狼","女巫","守墓人","吹笛者"];
+const FIRST=["盗贼","丘比特","野孩子"];
+
+/* ============ 数据：白天/结算/胜负台词 ============ */
+const DAY=[
+ {t:"🌅 天亮",x:"天亮了，现在进入白天。<br>昨晚，X号玩家死亡。<br>（平安夜）昨晚是平安夜，无人死亡。"},
+ {t:"🚩 警长竞选",x:"现在开始警长竞选，想要竞选警长的玩家，请举手。<br>上警玩家按顺序依次发言，发言结束后，警下玩家投票选出警长。<br>X号玩家当选警长，警长拥有1.5票。（警长死亡可移交警徽或撕掉）"},
+ {t:"🗣️ 发言与放逐",x:"现在从X号玩家开始，按顺序轮流发言。<br>所有玩家发言完毕，现在开始放逐投票，请给你想出局的玩家投出一票。3、2、1，请投票！<br>X号获得最多票数，X号被放逐出局，请留遗言。"},
+ {t:"⚖️ 平票处理",x:"X号、Y号平票，平票玩家进行PK发言，其余玩家再次投票。<br>再次投票依然平票，本次放逐无人出局，直接进入夜晚。"},
+ {t:"🏹 猎人/狼王/学猎人的机械狼 开枪",x:"X号是猎人（狼王/机械狼习得猎人），你可以开枪带走一名玩家，请选择。<br>（毒杀）X号死于毒药，无法开枪。"},
+ {t:"🃏 愚者被放逐",x:"X号是愚者，翻牌免疫放逐，不会出局。从此失去投票权，可以继续发言。"},
+ {t:"💔 狼美人被放逐",x:"X号是狼美人，跟随他魅惑的X号玩家一同出局，请两位留遗言。"},
+ {t:"💣 炸弹人被放逐",x:"X号是炸弹人，炸弹引爆！所有投给X号的玩家一同出局！"},
+ {t:"🤺 骑士决斗（玩家主动翻牌）",x:"X号骑士决斗Y号！Y号是狼人，Y号出局，请留遗言！<br>X号骑士决斗Y号！Y号是好人，骑士X号出局，请留遗言！"},
+ {t:"🐺 白狼王自爆",x:"X号玩家选择自爆，自爆成功，发言终止。白狼王可以带走一名玩家。进入夜晚。<br>（普通狼）X号玩家选择自爆，自爆成功，发言终止，进入夜晚。"},
+ {t:"🏆 胜负判定",x:"好人屠边胜利：场上所有狼人已经出局，好人阵营获胜！<br>狼人屠边胜利：场上所有神职/平民已经出局，狼人阵营获胜！<br>第三方胜利：第三方阵营达成胜利条件，第三方获胜！"}
+];
+
+/* ============ 数据：FAQ ============ */
+const FAQ=[
+ {q:"恶灵骑士同一晚被预言家查验 + 被女巫毒，结算顺序怎么算？",a:"反伤是『一次性』触发。常见裁定：夜里先处理被动反伤——预言家查验恶灵骑士→预言家出局；女巫毒恶灵骑士→女巫出局，两者各自触发一次反伤后永久失效。恶灵骑士自身夜间免疫刀毒、不会死。若该板规定反伤『只触发一次』，则按先到先得（验或毒其一触发，另一个无效）。最干净的做法：赛前统一规则，避免同夜争议。"},
+ {q:"机械狼学到守卫，能不能守护自己？",a:"可以，但要遵守守卫硬规则：①不能连续两晚守护同一个人（包括自己）；②若机械狼（学守卫）守护的人同时被女巫用解药救，触发『同守同救』，该目标直接死亡。机械狼学到的是『守护』技能本身，使用规则与普通守卫一致，可以守自己，只是不能连守。"},
+ {q:"同守同救到底怎么死？",a:"守卫守护了X，女巫同一晚又对X用解药，X必死（规则设定抵消）。只有『守护+解药』同一目标才致死；若守卫空守或女巫没救，则正常。"},
+ {q:"狼美人夜里被刀死，带不带被魅惑的人？",a:"不带。狼美人只在『白天被投票放逐』时才带走魅惑对象；夜里（被狼刀/被毒）死亡不带人。"},
+ {q:"石像鬼 / 机械狼什么时候才能刀人？",a:"石像鬼：所有普通狼人全部出局后，才可以参与刀人，且不能自爆。机械狼：普通狼人全部出局后，若它学的是狼人则解锁『双刀』（一晚两刀）；普狼存活期间机械狼不能刀人。"},
+ {q:"摄梦人连摄、摄梦人死亡分别怎么结算？",a:"连续两晚摄梦同一名玩家→该玩家出局；摄梦人自己死亡（被刀/被毒/被放逐）时，当夜所有被他摄梦的玩家一同出局。摄梦提供的是『当夜免疫死亡』保护。"},
+ {q:"猎人 / 狼王 / 学到猎人的机械狼，被女巫毒杀能开枪吗？",a:"不能。只有『夜间被狼刀』或『白天被投票放逐』才能开枪；被女巫毒杀一律无法开枪。狼王自爆、被毒也不能开枪；白狼王自爆可带人，但被投/被毒不能带人。"},
+ {q:"纯白之女什么时候能直接处决狼人？",a:"第一晚只报阵营；从第二晚起，查验到狼人直接处决（狼人出局）。验到好人仍只给阵营信息。因此纯白之女第二夜之后是狼队首要目标。"},
+ {q:"丘比特连出人狼情侣，怎么算胜利？",a:"人人/狼狼情侣：丘比特跟随原阵营；人狼情侣：丘比特+这对情侣组成第三方，需杀光场上其余所有人（包括原好人原狼人）才获胜。此时进入三方混战，屠边规则对人狼链不适用。"},
+ {q:"守墓人每晚验的是谁？",a:"验的是『上一个白天被放逐出局』玩家的阵营（好人/狼人），只给阵营不给具体身份。首夜无放逐，无信息；前期建议低调，关键抗推后再跳修正视角。"},
+ {q:"女巫首夜自救规则？",a:"多数板子首夜允许女巫自救（刀到女巫时可自救）；高阶/定制板可能禁止首夜自救。赛前务必确认该板规则，法官在女巫环节提示。"},
+ {q:"奇迹商人把技能给到狼人会怎样？",a:"奇迹商人当夜直接死亡（暴毙）。因此首夜发技能是高风险博弈，尽量给可信好人。"},
+ {q:"蚀时狼妃能抵消哪些技能？",a:"当夜对被锁定玩家的『第一次技能』（刀、毒、查验等）全部无效。不能连续两晚锁定同一个人。常用于保护狼队友，抵消预言家/通灵师查验或女巫毒药。"},
+ {q:"种狼感染失败的条件？",a:"狼刀结束后种狼可感染当夜被刀的玩家；若被女巫解药救起，则感染失败。被感染玩家失去原有技能变为狼人。"},
+ {q:"炸弹人夜间死亡会爆炸吗？",a:"不会。炸弹人只在『白天被投票放逐出局』时引爆，所有投给他的人一同出局；夜间（被刀/被毒）死亡不爆炸。"},
+ {q:"咒狐被预言家查验会怎样？",a:"咒狐直接出局（这是咒狐的弱点）。但狼人刀咒狐不会死；当好人/狼人分出胜负时，若咒狐仍存活则咒狐单独胜利。"},
+ {q:"吹笛者怎么单独获胜？",a:"每晚催眠两名玩家，当『所有存活玩家』都被催眠标记，吹笛者单独获胜。需慢慢叠加标记，隐藏身份避免被优先抗推。"},
+ {q:"赤月使徒第一次被抗推为什么没死？",a:"赤月使徒第一次被投票放逐不会死亡，翻牌封印自己；当场上神职≤2 或 平民≤2 时解封回归狼队，获得一次刀人机会。主动吃抗推可保留狼轮次。"}
+];
+
+/* ============ 渲染：角色词典 ============ */
+const roleList=document.getElementById('roleList');
+let curCat='all',curQ='';
+function badgeClass(cat){return cat==='神职'?'b-good':cat==='平民'?'b-civ':cat==='狼人'?'b-wolf':'b-third';}
+function renderRoles(){
+  const q=curQ.trim().toLowerCase();
+  const arr=ROLES.filter(r=>{
+    const okCat=curCat==='all'||r.cat===curCat;
+    const okQ=!q||(r.n+r.skill+r.play+r.b).toLowerCase().includes(q);
+    return okCat&&okQ;
+  });
+  if(!arr.length){roleList.innerHTML='<section class="empty">没有匹配的角色，换个关键词试试～</section>';return;}
+  roleList.innerHTML=arr.map(r=>`
+   <div class="card">
+     <h3>${r.n}<span class="badge ${badgeClass(r.cat)}">${r.cat}</span><span class="diff">${r.d||''}</span></h3>
+     <div class="skill"><b>技能：</b>${r.skill}</div>
+     <div class="play"><b>玩法：</b>${r.play}</div>
+     <div class="boards">适配板子：${r.b}</div>
+   </div>`).join('');
+}
+document.getElementById('roleSearch').addEventListener('input',e=>{curQ=e.target.value;renderRoles();});
+document.getElementById('roleChips').addEventListener('click',e=>{
+  if(!e.target.classList.contains('chip'))return;
+  document.querySelectorAll('#roleChips .chip').forEach(c=>c.classList.remove('on'));
+  e.target.classList.add('on');curCat=e.target.dataset.cat;renderRoles();
+});
+renderRoles();
+
+/* ============ 渲染：板子（预设） ============ */
+const boardGrid=document.getElementById('boardGrid');
+function nightOrderFor(board,night){
+  const order=[];
+  if(night===1) FIRST.forEach(r=>{if(board.roles.includes(r))order.push({n:r,fn:true});});
+  CANON.forEach(r=>{
+    if(!board.roles.includes(r))return;
+    if((r==='奇迹商人'||r==='炼金魔女')&&night!==1)return;
+    order.push({n:r,fn:false});
+  });
+  return order;
+}
+function renderBoards(){
+  boardGrid.innerHTML=BOARDS.map((b,i)=>`
+   <div class="bcard">
+     <h4>${b.n} <span style="color:var(--gold);font-size:12px">${b.d}</span></h4>
+     <div class="cfg">${b.cfg}<br><span style="color:var(--accent)">${b.feat}</span></div>
+     <span class="go" data-i="${i}" data-act="toggle">展开详情 ›</span>
+     <div class="bdetail" id="bd-${i}">
+       <div class="order-title">本板夜间唤醒顺序（第1夜）</div>
+       <div class="order">${nightOrderFor(b,1).map(o=>`<span class="step">${o.n}${o.fn?' ·首夜':''}</span>`).join('')}</div>
+       <div class="order-title" style="margin-top:8px">角色构成</div>
+       <div class="order">${b.roles.map(r=>`<span class="step">${r}</span>`).join('')}</div>
+       <span class="go" data-i="${i}" data-act="judge" style="margin-top:10px;display:inline-block">⚖️ 用法官助手 →</span>
+     </div>
+   </div>`).join('');
+}
+boardGrid.addEventListener('click',e=>{
+  const go=e.target.closest('.go');if(!go)return;
+  const i=+go.dataset.i;
+  if(go.dataset.act==='toggle'){
+    const d=document.getElementById('bd-'+i);
+    d.classList.toggle('show');
+    go.textContent=d.classList.contains('show')?'收起详情 ›':'展开详情 ›';
+  }else if(go.dataset.act==='judge'){
+    switchSec('judge');
+    document.getElementById('judgeBoard').value=i;
+    document.getElementById('nightNum').textContent='1';
+    refreshJudge();
+  }
+});
+renderBoards();
+
+/* ============ 板子配置器：自定义 ============ */
+const customRoles=new Set();
+let hadCustom=false;
+const customChips=document.getElementById('customChips');
+const CATS=['神职','平民','狼人','第三方'];
+customChips.innerHTML=CATS.map(c=>`<div style="width:100%;color:var(--accent);font-size:13px;margin:6px 0 2px;flex-basis:100%">${c}</div>`+
+  ROLES.filter(r=>r.cat===c).map(r=>`<div class="chip trole" data-n="${r.n}">${r.n}</div>`).join('')).join('');
+customChips.addEventListener('click',e=>{
+  const c=e.target.closest('.trole');if(!c)return;
+  const n=c.dataset.n;
+  if(customRoles.has(n)){customRoles.delete(n);c.classList.remove('on');}
+  else{customRoles.add(n);c.classList.add('on');}
+  renderCustomPreview();
+});
+function renderCustomPreview(){
+  const roles=[...customRoles];
+  const preview=document.getElementById('customPreview');
+  if(!roles.length){preview.innerHTML='<p style="font-size:13px;color:var(--sub)">尚未勾选角色。勾选后这里会显示本局夜间顺序与角色构成。</p>';}
+  else{
+    const order=nightOrderFor({roles},1);
+    preview.innerHTML=`
+      <h3 style="font-size:15px">本局配置（${roles.length} 个角色）</h3>
+      <div class="order-title">夜间唤醒顺序（第1夜）</div>
+      <div class="order"><span class="step">天黑请闭眼</span>${order.map(o=>`<span class="step">${o.n}${o.fn?' ·首夜':''}</span>`).join('')}<span class="step">天亮了</span></div>
+      <div class="order-title" style="margin-top:8px">角色构成</div>
+      <div class="order">${roles.map(r=>`<span class="step">${r}</span>`).join('')}</div>`;
+  }
+  if((customRoles.size>0)!==hadCustom){hadCustom=customRoles.size>0;populateJudgeBoard();}
+}
+renderCustomPreview();
+
+document.getElementById('boardSeg').addEventListener('click',e=>{
+  if(!e.target.dataset.v)return;
+  document.querySelectorAll('#boardSeg button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  const v=e.target.dataset.v;
+  document.getElementById('presetView').style.display=v==='preset'?'block':'none';
+  document.getElementById('customView').style.display=v==='custom'?'block':'none';
+});
+document.getElementById('customJudge').onclick=()=>{
+  if(!customRoles.size){alert('请先在自定义配置里勾选至少几个角色');return;}
+  populateJudgeBoard();
+  document.getElementById('judgeBoard').value='custom';
+  document.getElementById('nightNum').textContent='1';
+  switchSec('judge');refreshJudge();
+};
+
+/* ============ 法官助手 ============ */
+const judgeBoard=document.getElementById('judgeBoard');
+function populateJudgeBoard(){
+  let opts=BOARDS.map((b,i)=>`<option value="${i}">${b.n}</option>`).join('');
+  if(customRoles.size>0) opts+=`<option value="custom">🛠 自定义板子（${customRoles.size}角色）</option>`;
+  judgeBoard.innerHTML=opts;
+}
+function curBoard(){
+  if(judgeBoard.value==='custom') return {n:'自定义板子',cfg:'自定义',feat:'你勾选的角色',roles:[...customRoles]};
+  return BOARDS[+judgeBoard.value];
+}
+populateJudgeBoard();
+let curNight=1;
+function refreshJudge(){
+  const b=curBoard();
+  const ord=nightOrderFor(b,curNight);
+  document.getElementById('orderBox').innerHTML=`
+    <div class="order-title">本板夜间唤醒顺序（第 ${curNight} 夜）</div>
+    <div class="order"><span class="step">天黑请闭眼</span>${ord.map(o=>`<span class="step">${o.n}${o.fn?' ·首夜':''}</span>`).join('')}<span class="step">天亮了</span></div>`;
+}
+judgeBoard.addEventListener('change',refreshJudge);
+document.getElementById('nightMinus').onclick=()=>{if(curNight>1){curNight--;document.getElementById('nightNum').textContent=curNight;refreshJudge();}};
+document.getElementById('nightPlus').onclick=()=>{curNight++;document.getElementById('nightNum').textContent=curNight;refreshJudge();};
+document.getElementById('showOrder').onclick=()=>document.getElementById('orderBox').classList.toggle('show');
+refreshJudge();
+
+const dayAcc=document.getElementById('dayAcc');
+dayAcc.innerHTML=DAY.map((d,i)=>`
+  <div class="acc" data-i="${i}">
+    <div class="hd">${d.t}<span class="tg">+</span></div>
+    <div class="bd">${d.x}</div>
+  </div>`).join('');
+dayAcc.addEventListener('click',e=>{
+  const hd=e.target.closest('.hd');if(!hd)return;
+  hd.parentElement.classList.toggle('open');
+});
+
+/* ============ 法官倒计时计时器 ============ */
+let timerLeft=120,timerBase=120,timerId=null,timerRunning=false;
+const timerDisp=document.getElementById('timerDisp');
+function fmt(s){const m=Math.floor(s/60),ss=s%60;return String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');}
+function updateTimer(){timerDisp.textContent=fmt(timerLeft);timerDisp.classList.remove('ring');}
+function timerStop(){if(timerId){clearInterval(timerId);timerId=null;}timerRunning=false;}
+function timerBuzz(){if(navigator.vibrate)navigator.vibrate([200,100,200,100,200]);timerDisp.classList.add('ring');}
+document.querySelectorAll('.timer-presets button').forEach(b=>b.onclick=()=>{timerStop();timerBase=+b.dataset.s;timerLeft=timerBase;updateTimer();});
+document.getElementById('tStart').onclick=()=>{if(timerRunning)return;if(timerLeft<=0)timerLeft=timerBase;timerRunning=true;timerId=setInterval(()=>{timerLeft--;if(timerLeft<=0){timerLeft=0;updateTimer();timerStop();timerBuzz();}else updateTimer();},1000);};
+document.getElementById('tPause').onclick=()=>timerStop();
+document.getElementById('tReset').onclick=()=>{timerStop();timerLeft=timerBase;updateTimer();};
+updateTimer();
+
+/* ============ 分步流程覆盖层 ============ */
+let steps=[],si=0;
+function buildSteps(){
+  const b=curBoard(),night=curNight;
+  steps=[];
+  steps.push({r:'开场',s:'天黑请闭眼。',n:''});
+  if(night===1) FIRST.forEach(r=>{if(b.roles.includes(r))steps.push({r, s:NIGHT[r].s, n:NIGHT[r].n});});
+  CANON.forEach(r=>{
+    if(!b.roles.includes(r))return;
+    if((r==='奇迹商人'||r==='炼金魔女')&&night!==1)return;
+    let s=NIGHT[r].s;
+    if(r==='机械狼'&&night===1)s=NIGHT[r].first;
+    steps.push({r,s,n:NIGHT[r].n});
+  });
+  steps.push({r:'天亮',s:'天亮了，现在进入白天。\n（昨晚X号死亡 / 平安夜无人死亡）',n:''});
+}
+const overlay=document.getElementById('stepOverlay');
+function showStep(){
+  const st=steps[si];
+  document.getElementById('stepRole').textContent=st.r;
+  document.getElementById('stepBody').textContent=st.s;
+  document.getElementById('stepNote').textContent=st.n||'';
+  document.getElementById('stepCount').textContent=(si+1)+' / '+steps.length;
+}
+document.getElementById('startNight').onclick=()=>{
+  buildSteps();si=0;showStep();overlay.classList.remove('hidden');
+};
+document.getElementById('nextStep').onclick=()=>{if(si<steps.length-1){si++;showStep();}};
+document.getElementById('prevStep').onclick=()=>{if(si>0){si--;showStep();}};
+document.getElementById('exitStep').onclick=()=>overlay.classList.add('hidden');
+
+/* ============ 小抄夜间顺序 ============ */
+document.getElementById('cheatOrder').innerHTML=
+  '天黑请闭眼 → '+CANON.join(' → ')+' → 天亮。'+
+  '<br><span style="color:var(--sub);font-size:12px">首夜前置（有则先唤醒）：盗贼 → 丘比特 → 野孩子；奇迹商人/炼金魔女仅首夜。</span>';
+
+/* ============ FAQ ============ */
+const faqAcc=document.getElementById('faqAcc');
+faqAcc.innerHTML=FAQ.map((f,i)=>`
+  <div class="acc" data-i="${i}">
+    <div class="hd">${f.q}<span class="tg">+</span></div>
+    <div class="bd">${f.a}</div>
+  </div>`).join('');
+faqAcc.addEventListener('click',e=>{
+  const hd=e.target.closest('.hd');if(!hd)return;
+  hd.parentElement.classList.toggle('open');
+});
+
+/* ============ 结算判定模拟器 ============ */
+const simBoard=document.getElementById('simBoard');
+const CAMP_LABEL={god:['神职','b-good'],civ:['平民','b-civ'],wolf:['狼人','b-wolf'],third:['第三方','b-third']};
+let simState={god:0,civ:0,wolf:0,third:0};
+simBoard.innerHTML=BOARDS.map((b,i)=>`<option value="${i}">${b.n}</option>`).join('');
+function countsFromBoard(b){
+  const c={god:0,civ:0,wolf:0,third:0};
+  b.roles.forEach(r=>{const role=ROLES.find(x=>x.n===r);if(role)c[role.cat==='神职'?'god':role.cat==='平民'?'civ':role.cat==='狼人'?'wolf':'third']++;});
+  return c;
+}
+function renderSimCounts(){
+  const el=document.getElementById('simCounts');
+  el.innerHTML=Object.keys(CAMP_LABEL).map(k=>{
+    const [lab,bc]=CAMP_LABEL[k];
+    return `<div class="row"><div class="lab">${lab}<span class="badge ${bc}">${k}</span></div>
+      <div class="v"><button data-k="${k}" data-d="-1">−</button><span id="sc-${k}">${simState[k]}</span><button data-k="${k}" data-d="1">+</button></div></div>`;
+  }).join('');
+}
+document.getElementById('simCounts').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const k=b.dataset.k, d=+b.dataset.d;
+  simState[k]=Math.max(0,simState[k]+d);
+  document.getElementById('sc-'+k).textContent=simState[k];
+});
+simBoard.addEventListener('change',()=>{
+  simState=countsFromBoard(BOARDS[+simBoard.value]);
+  renderSimCounts();
+  document.getElementById('simResult').style.display='none';
+});
+// 事件表单
+const simEvents=document.getElementById('simEvents');
+simEvents.innerHTML=`
+  <div class="ev-row">
+    <div class="lab">① 狼刀目标（阵营）</div>
+    <select id="evWolf"><option value="">无</option><option value="god">神职</option><option value="civ">平民</option></select>
+    <label><input type="checkbox" id="evSave"> 女巫解药救活</label>
+    <label><input type="checkbox" id="evTog"> 同守同救（守护+解药同人）</label>
+  </div>
+  <div class="ev-row">
+    <div class="lab">② 女巫毒药毒死</div>
+    <select id="evPoison"><option value="">无</option><option value="god">神职</option><option value="civ">平民</option><option value="wolf">狼人</option></select>
+  </div>
+  <div class="ev-row">
+    <div class="lab">③ 猎魔人狩猎</div>
+    <select id="evHunt"><option value="">无</option><option value="wolf">猎到狼人（−1狼）</option><option value="god">猎到神职（−1神）</option><option value="civ">猎到平民（−1民）</option></select>
+  </div>
+  <div class="ev-row">
+    <div class="lab">④ 摄梦连摄刺杀</div>
+    <select id="evDream"><option value="">无</option><option value="god">神职</option><option value="civ">平民</option><option value="wolf">狼人</option></select>
+  </div>
+  <div class="ev-row">
+    <div class="lab">⑤ 骑士决斗</div>
+    <select id="evKnight"><option value="">无</option><option value="wolf">决斗狼人（−1狼）</option><option value="god">决斗神职（−1神）</option><option value="civ">决斗平民（−1民）</option></select>
+  </div>
+  <div class="ev-row">
+    <div class="lab">⑥ 额外狼方带人（白狼王爆/狼王枪等）</div>
+    <select id="evExtra"><option value="">无</option><option value="god">神职</option><option value="civ">平民</option></select>
+  </div>`;
+function val(id){return document.getElementById(id).value;}
+function chk(id){return document.getElementById(id).checked;}
+document.getElementById('simRun').onclick=()=>{
+  const deaths={god:0,civ:0,wolf:0,third:0};
+  const detail=[];
+  // 狼刀
+  const wk=val('evWolf');
+  if(wk){
+    const saved=chk('evSave'), tog=chk('evTog');
+    if(tog){deaths[wk]++;detail.push(`同守同救：狼刀目标（${CAMP_LABEL[wk][0]}）必死`);}
+    else if(saved){detail.push(`狼刀（${CAMP_LABEL[wk][0]}）被女巫解药救活，未死`);}
+    else{deaths[wk]++;detail.push(`狼刀命中 ${CAMP_LABEL[wk][0]}`);}
+  }
+  const poison=val('evPoison');if(poison){deaths[poison]++;detail.push(`女巫毒死 ${CAMP_LABEL[poison][0]}`);}
+  const hunt=val('evHunt');if(hunt){deaths[hunt]++;detail.push(`猎魔人狩猎到 ${CAMP_LABEL[hunt][0]}`);}
+  const dream=val('evDream');if(dream){deaths[dream]++;detail.push(`摄梦连摄 ${CAMP_LABEL[dream][0]}`);}
+  const knight=val('evKnight');if(knight){deaths[knight]++;detail.push(`骑士决斗 ${CAMP_LABEL[knight][0]}`);}
+  const extra=val('evExtra');if(extra){deaths[extra]++;detail.push(`狼方额外带人 ${CAMP_LABEL[extra][0]}`);}
+  // 应用
+  const before={...simState};
+  ['god','civ','wolf','third'].forEach(k=>{simState[k]=Math.max(0,simState[k]-deaths[k]);});
+  renderSimCounts();
+  // 胜负
+  let verdict,vc;
+  if(simState.wolf<=0){verdict='🏆 好人屠边胜利！场上狼人已全灭。';vc='good';}
+  else if(simState.god<=0||simState.civ<=0){verdict=`🐺 狼人屠边胜利！（${simState.god<=0?'神职':'平民'}已全灭）`;vc='wolf';}
+  else{verdict='🎮 游戏继续，尚未分出胜负。';vc='continue';}
+  const totalDeath=detail.length?detail.join('；'):'无死亡事件';
+  document.getElementById('simResult').style.display='block';
+  document.getElementById('simResult').innerHTML=`
+    <div class="verdict ${vc}">${verdict}</div>
+    <div class="res-item"><b>今夜死亡：</b>${totalDeath}</div>
+    <div class="res-item"><b>存活更新：</b>神职 ${before.god}→${simState.god} ｜ 平民 ${before.civ}→${simState.civ} ｜ 狼人 ${before.wolf}→${simState.wolf}${simState.third?(' ｜ 第三方 '+simState.third):''}</div>
+    <div class="res-item" style="font-size:12px;color:var(--sub)">提示：可手动 +/− 修正历史伤亡后再次结算；多夜累计自动叠加。</div>`;
+};
+document.getElementById('simReset').onclick=()=>{
+  simState=countsFromBoard(BOARDS[+simBoard.value]);renderSimCounts();
+  ['evWolf','evPoison','evHunt','evDream','evKnight','evExtra'].forEach(id=>document.getElementById(id).value='');
+  ['evSave','evTog'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById('simResult').style.display='none';
+};
+simState=countsFromBoard(BOARDS[0]);renderSimCounts();
+
+/* ============ 底部导航 ============ */
+function switchSec(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===name));
+  window.scrollTo({top:0});
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;switchSec(b.dataset.sec);
+});
+
+/* ============ PWA ============ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(()=>{
+      setTimeout(()=>{const t=document.getElementById('instTip');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);},1200);
+    }).catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
