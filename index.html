@@ -329,9 +329,10 @@ section.empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14p
       <div class="bsec"><div class="bti">🤙 通用手势暗语</div><div class="bsigns" id="bmGesture"></div></div>
       <div class="bsec"><div class="bti">⚠️ 相关注意事项</div><div class="bnotes" id="bmNotes"></div></div>
       <div style="display:flex;gap:8px">
-        <button class="btn ghost" id="bmPrint" style="flex:1;margin:4px 0 2px">🖨 打印 A4 速查卡</button>
-        <button class="btn" id="bmJudge" style="flex:1;margin:4px 0 2px">⚖️ 用法官助手 →</button>
+        <button class="btn ghost" id="bmPrint" style="flex:1;margin:4px 0 2px">🖨 打印</button>
+        <button class="btn ghost" id="bmDownload" style="flex:1;margin:4px 0 2px">⬇️ 存文件(WPS打印)</button>
       </div>
+      <button class="btn" id="bmJudge" style="width:100%;margin:4px 0 2px">⚖️ 用法官助手 →</button>
     </div>
   </div>
 </div>
@@ -787,6 +788,7 @@ function closeBoardModal(){document.getElementById('boardModal').classList.add('
 document.getElementById('boardModal').addEventListener('click',e=>{ if(e.target.id==='boardModal') closeBoardModal(); });
 document.getElementById('bmClose').onclick=closeBoardModal;
 document.getElementById('bmPrint').onclick=()=>printBoardSheet(document.getElementById('bmName').textContent);
+document.getElementById('bmDownload').onclick=()=>downloadBoardSheet(document.getElementById('bmName').textContent);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !document.getElementById('boardModal').classList.contains('hidden')) closeBoardModal(); });
 const PRINT_CSS=`
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,"Microsoft YaHei",sans-serif}
@@ -815,8 +817,8 @@ body{background:#fff;color:#111;padding:8mm;font-size:12px;line-height:1.6}
 .pck-tip{margin-top:8px;font-size:11px;color:#333;background:#f1f5f9;border-radius:6px;padding:7px 9px}
 .pck-tip b{color:#b45309}
 `;
-function printBoardSheet(name){
-  const b=BOARDS.find(x=>x.n===name);if(!b)return;
+function boardSheetDoc(name){
+  const b=BOARDS.find(x=>x.n===name);if(!b)return '';
   const order=nightOrderFor(b,1);
   const campMap={'神职':[],'平民':[],'狼人':[],'第三方':[]};
   b.roles.forEach(r=>{const rc=ROLES.find(x=>x.n===r);if(rc)campMap[rc.cat].push(r);});
@@ -862,7 +864,11 @@ function printBoardSheet(name){
      <ol class="pchk">${checklist}</ol>
      <div class="pck-tip"><b>结算速记：</b>同守同救=死；猎人/狼王被毒不能开枪；狼美人仅白天带人；石像鬼/机械狼普狼全灭才刀人；恶灵骑士仅白天抗推出局。好人杀光狼人胜，狼人杀光神职或平民胜。</div>
    </div>`;
-  const doc=`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${b.n} 速查卡</title><style>${PRINT_CSS}</style></head><body>${sheet}</body></html>`;
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${b.n} 速查卡</title><style>${PRINT_CSS}</style></head><body>${sheet}</body></html>`;
+}
+
+function printBoardSheet(name){
+  const doc=boardSheetDoc(name); if(!doc) return;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('aria-hidden','true');
   // 关键：iframe 必须给真实尺寸并置于屏幕外（不能 0 尺寸/display:none/visibility:hidden），
@@ -877,6 +883,18 @@ function printBoardSheet(name){
     },150);
   };
   ifr.srcdoc=doc;
+}
+
+// 导出独立的 .html 速查卡文件：用 WPS / 任意浏览器打开后打印，
+// 绕开"浏览器直连打印机"在某些驱动(XPS路径)下任务卡在"未知状态"的问题。
+function downloadBoardSheet(name){
+  const doc=boardSheetDoc(name); if(!doc) return;
+  const blob=new Blob([doc],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=(name||'狼人杀速查卡')+'-速查卡.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },500);
 }
 
 /* ============ 板子配置器：自定义 ============ */
