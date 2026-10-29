@@ -876,10 +876,14 @@ wireSearchHistory('termSearch','wolf_term_hist',q=>{ curTermQ=q; renderTerms(); 
 
 /* ============ 渲染：板子（预设） ============ */
 const boardGrid=document.getElementById('boardGrid');
+function boardHasWolf(b){
+  return (b.roles||[]).some(rn=>{const rl=ROLES.find(x=>x.n===rn);return rl&&rl.cat==='狼人';});
+}
 function nightOrderFor(board,night){
   const order=[];
   if(night===1) FIRST.forEach(r=>{if(board.roles.includes(r))order.push({n:r,fn:true});});
   CANON.forEach(r=>{
+    if(r==='狼人'){ if(!boardHasWolf(board))return; order.push({n:r,fn:false}); return; }
     if(!board.roles.includes(r))return;
     if((r==='奇迹商人'||r==='炼金魔女')&&night!==1)return;
     order.push({n:r,fn:false});
@@ -1255,6 +1259,7 @@ function buildSteps(){
   steps.push({r:'开场',s:'天黑请闭眼。',n:''});
   if(night===1) FIRST.forEach(r=>{if(b.roles.includes(r))steps.push({r, s:NIGHT[r].s, n:NIGHT[r].n});});
   CANON.forEach(r=>{
+    if(r==='狼人'){ if(!boardHasWolf(b))return; steps.push({r, s:NIGHT[r].s, n:NIGHT[r].n}); return; }
     if(!b.roles.includes(r))return;
     if((r==='奇迹商人'||r==='炼金魔女')&&night!==1)return;
     let s=NIGHT[r].s;
