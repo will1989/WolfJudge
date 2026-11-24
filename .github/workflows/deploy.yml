@@ -7,6 +7,10 @@ on:
 
 permissions:
   contents: read
+  # deploy-pages@v4 需要通过 Actions API 查询 github-pages artifact 元数据；
+  # 一旦声明 permissions 块，未列出的权限默认为 none，故必须显式加上 actions: read
+  # （GitHub 官方 issue actions/deploy-pages#285）
+  actions: read
   pages: write
   id-token: write
 
